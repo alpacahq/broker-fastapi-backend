@@ -13,4 +13,8 @@ response = client.confirm_sign_up(
     ConfirmationCode=confirm_code
 )
 
+response = client.admin_confirm_sign_up(
+    
+)
+
 print(response)

@@ -3,8 +3,8 @@ import boto3
 from dotenv import load_dotenv
 load_dotenv()
 
-username = 'awood@ualberta.ca'
-password = 'wood123'
+username = 'admin2@test.com'
+password = 'asdfasdf'
 
 client = boto3.client('cognito-idp', region_name=os.getenv('COGNITO_REGION_NAME'))
 response = client.initiate_auth(
@@ -22,3 +22,4 @@ refresh_token = response['AuthenticationResult']['RefreshToken']
 print(f'Response: {response}\n')
 print(f'Access token: {access_token}\n')
 print(f'Refresh token: {refresh_token}\n')
+

@@ -1,0 +1,22 @@
+import os
+from dotenv import load_dotenv
+load_dotenv()
+
+from jwt_decode import *
+
+os.environ.get('COGNITO_REGION_NAME')
+
+id_token = 'eyJraWQiOiJcL0Fia01US1h1UitIVmtsb0N2SE1PdVJ0NXJZZStvY1VxRThFNEJMeVNBdz0iLCJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxZGI0YjgwNS1kMzk3LTQ2OWYtYjZmMC04N2Q1ZGZlMjAyMTkiLCJpc3MiOiJodHRwczpcL1wvY29nbml0by1pZHAudXMtZWFzdC0xLmFtYXpvbmF3cy5jb21cL3VzLWVhc3QtMV9aaEhESllMNWMiLCJjbGllbnRfaWQiOiIybmx2NGdvMWpjMWE3ajV1ZXFiNWsxcnYxaSIsIm9yaWdpbl9qdGkiOiIwZGE3NjI1NS0yYTBiLTQzMjYtOWQ1NS02Mjg5YzliZWM0MDQiLCJldmVudF9pZCI6IjQ1ZTg5NWNmLTY4NTEtNDU0Ni04NTA5LTgzMDM3ZjAyMmFhNCIsInRva2VuX3VzZSI6ImFjY2VzcyIsInNjb3BlIjoiYXdzLmNvZ25pdG8uc2lnbmluLnVzZXIuYWRtaW4iLCJhdXRoX3RpbWUiOjE2NTc4MTI5OTMsImV4cCI6MTY1NzgxNjU5MywiaWF0IjoxNjU3ODEyOTkzLCJqdGkiOiJmZDgwNTZkZi00NDZkLTQwNzUtOWQ4NC1mZTI2Y2NmYjMzMmEiLCJ1c2VybmFtZSI6IjFkYjRiODA1LWQzOTctNDY5Zi1iNmYwLTg3ZDVkZmUyMDIxOSJ9.sg3yk-37VROIujT7V7TzVPZFfRVx6m-_NfxRhoENhd4YlQ9adiciUa8IYmKkG4HHX_O1E0Apb13GJkESvl9qeJOy5pQdv27IcdnM63OroxUQ8KnsUOjjkQDEtYrONe2T_0VDdB33xYTs1wr4XL-WF-zvFwFG587p7VQ6BYFYAT6Sl_C-69dOsbPG75yQPhxPR7ctKgymbnA1tjF1b6Rd_OuEoug5nkwGGQgcXpYuBqxb4cgO2OqECMiKyOAr67Jo79zvU73OOB4daCVnt52teYgfJDHwvDjVHsDrTui8-kRoeEYoYJfJSUSJQYpad2OUK1wfmucmewihESGTQt91Eg'
+REGION = os.environ.get('COGNITO_REGION_NAME')
+USERPOOL_ID = os.environ.get('USER_POOL_ID')
+APP_CLIENT_ID = os.environ.get('COGNITO_USER_CLIENT_ID')
+
+verified_claims: dict = decode(
+    id_token,
+    REGION,
+    USERPOOL_ID,
+    app_client_id=APP_CLIENT_ID  # Optional
+    # testmode=False  # Disable token expiration check for testing purposes
+)
+
+print(verified_claims)
