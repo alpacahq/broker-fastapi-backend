@@ -3,7 +3,7 @@ import boto3
 from dotenv import load_dotenv
 load_dotenv()
 
-username = 'admin2@test.com'
+username = 'admin4@test.com'
 password = 'asdfasdf'
 
 client = boto3.client('cognito-idp', region_name=os.getenv('COGNITO_REGION_NAME'))

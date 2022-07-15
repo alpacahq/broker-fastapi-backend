@@ -3,7 +3,7 @@ import boto3
 from dotenv import load_dotenv
 load_dotenv()
 
-username = 'admin2@test.com'
+username = 'admin6@test.com'
 password = 'asdfasdf'
 
 client = boto3.client('cognito-idp', region_name=os.environ.get('COGNITO_REGION_NAME'))
@@ -12,6 +12,10 @@ response = client.sign_up(
     Username=username,
     Password=password
 )
+
+user_sub = response['UserSub']
+
+print(f"User sub is: {user_sub}")
 
 # This will confirm user registration as an admin without a confirmation code
 response = client.admin_confirm_sign_up(
