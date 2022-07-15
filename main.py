@@ -1,5 +1,5 @@
 from typing import List
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from uuid import UUID
 
 import os
@@ -28,6 +28,28 @@ db: List[User] = [
 @app.get("/")
 async def root():
     return {"Hello": "wooder"}
+
+@app.get("/protected")
+async def root(request: Request):
+    access_token = request.headers.get('access-token')
+    REGION = os.environ.get('COGNITO_REGION_NAME')
+    USERPOOL_ID = os.environ.get('USER_POOL_ID')
+    APP_CLIENT_ID = os.environ.get('COGNITO_USER_CLIENT_ID')
+    # Attempt to decode the access token
+    try:
+        verified_claims: dict = cognitojwt.decode(
+            access_token,
+            REGION,
+            USERPOOL_ID,
+            app_client_id=APP_CLIENT_ID  # Optional
+        )
+    except:
+        raise HTTPException(
+            status_code=401,
+            detail="User is not authorized to get this resource"
+        )
+
+    return {"Hello": "Good job, you're authorized"}
 
 @app.get("/api/v1/users")
 async def fetch_users():
