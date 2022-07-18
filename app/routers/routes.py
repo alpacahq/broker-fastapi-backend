@@ -83,7 +83,7 @@ async def root(request: Request):
             access_token,
             REGION,
             USERPOOL_ID,
-            app_client_id=APP_CLIENT_ID  # Optional
+            app_client_id=APP_CLIENT_ID 
         )
     except:
         raise HTTPException(
