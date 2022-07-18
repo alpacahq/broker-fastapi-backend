@@ -7,7 +7,8 @@ import cognitojwt
 
 from fastapi import APIRouter, HTTPException, Request
 
-from models import User
+# from models import User
+from schemas.models import User
 
 router = APIRouter() # Do I need prefix, tags, or responses?
 
