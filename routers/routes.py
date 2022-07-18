@@ -33,7 +33,7 @@ async def register_user(user: User):
 
     # Now authenticate the user and return the tokens
     auth_response = client.initiate_auth(
-        ClientId=os.getenv('COGNITO_USER_CLIENT_ID'),
+        ClientId=os.environ.get('COGNITO_USER_CLIENT_ID'),
         AuthFlow='USER_PASSWORD_AUTH',
         AuthParameters={
             'USERNAME': username,
@@ -56,7 +56,7 @@ async def login_user(user: User):
     client = boto3.client('cognito-idp', region_name=os.environ.get('COGNITO_REGION_NAME'))
     # Authenticate the user and return the tokens
     auth_response = client.initiate_auth(
-        ClientId=os.getenv('COGNITO_USER_CLIENT_ID'),
+        ClientId=os.environ.get('COGNITO_USER_CLIENT_ID'),
         AuthFlow='USER_PASSWORD_AUTH',
         AuthParameters={
             'USERNAME': username,
