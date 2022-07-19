@@ -1,4 +1,5 @@
 from typing import List, Union
+from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -23,9 +24,8 @@ class Item(ItemBase):
 class UserBase(BaseModel):
     email: str
 
-# We're going to be passing in ID from apca-py later. Add it here
+
 class UserCreate(UserBase):
-    # id: str
     password: str
 
 
@@ -33,6 +33,26 @@ class User(UserBase):
     id: int
     is_active: bool
     items: List[Item] = []
+
+    class Config:
+        orm_mode = True
+
+class AccountBase(BaseModel):
+    name: str
+    email: str
+
+
+class AccountCreate(AccountBase):
+    # Post req received -> Sign up & auth cognito -> Create acc w/ apca-py -> Use apca ID
+    id: str
+    password: str
+
+# Account should have:
+# Id (account ID, str), name (str), email (str), equity (float), is_active (bool), created_at (datetime?)
+class Account(AccountBase):
+    equity: float
+    is_active: bool
+    created_at: datetime
 
     class Config:
         orm_mode = True

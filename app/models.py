@@ -23,3 +23,6 @@ class Item(Base):
     owner_id = Column(Integer, ForeignKey("users.id"))
 
     owner = relationship("User", back_populates="items")
+
+# Account should have:
+# Id (account ID, str), name (str), email (str), equity (float), is_active (bool), created_at (datetime?)
