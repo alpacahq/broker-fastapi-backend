@@ -23,8 +23,9 @@ class Item(ItemBase):
 class UserBase(BaseModel):
     email: str
 
-
+# We're going to be passing in ID from apca-py later. Add it here
 class UserCreate(UserBase):
+    # id: str
     password: str
 
 
