@@ -6,7 +6,6 @@ from alpaca.broker import BrokerClient
 from alpaca.broker.models import ListAccountsRequest
 from alpaca.broker.enums import AccountEntities
 
-# Adding datetime
 from datetime import datetime
 
 BROKER_API_KEY = os.environ.get("APCA_BROKER_API_KEY")
@@ -19,7 +18,8 @@ client = BrokerClient(
                 )
 
 filter_date = "2022-01-30T00:00:00.000Z"
-filter_datetime = datetime.strptime(filter_date, "%Y-%m-%dT%H:%M:%S.%fZ")
+DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+filter_datetime = datetime.strptime(filter_date, DATE_FORMAT)
 
 print(filter_datetime)
 

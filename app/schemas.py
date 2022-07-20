@@ -44,12 +44,13 @@ class AccountBase(BaseModel):
 
 class AccountCreate(AccountBase):
     # Post req received -> Sign up & auth cognito -> Create acc w/ apca-py -> Use apca ID
-    id: str
     password: str
+
 
 # Account should have:
 # Id (account ID, str), name (str), email (str), equity (float), is_active (bool), created_at (datetime?)
 class Account(AccountBase):
+    id: str
     equity: float
     is_active: bool
     created_at: datetime
