@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, DateTime
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -24,5 +24,12 @@ class Item(Base):
 
     owner = relationship("User", back_populates="items")
 
-# Account should have:
-# Id (account ID, str), name (str), email (str), equity (float), is_active (bool), created_at (datetime?)
+class Account(Base):
+    __tablename__ = "accounts"
+
+    id = Column(String, primary_key=True, index=True)
+    name = Column(String, index=True)
+    email = Column(String, index=True)
+    equity = Column(Float, index=True)
+    is_active = Column(Boolean, default=True)
+    created_at = Column(DateTime)
