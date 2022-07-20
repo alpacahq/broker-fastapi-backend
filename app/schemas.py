@@ -1,5 +1,4 @@
 from typing import List, Union
-from datetime import datetime
 
 from pydantic import BaseModel
 
@@ -53,7 +52,7 @@ class Account(AccountBase):
     id: str
     equity: float
     is_active: bool
-    created_at: datetime
+    created_at: str
 
     class Config:
         orm_mode = True

@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, DateTime
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -33,5 +33,5 @@ class Account(Base):
     email = Column(String, index=True)
     equity = Column(Float, default=float(0))
     is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime)
+    created_at = Column(String)
     hashed_password = Column(String)

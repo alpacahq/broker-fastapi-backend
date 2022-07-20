@@ -28,11 +28,15 @@ def create_account(db: Session, account: schemas.AccountCreate):
     password = account.password
     hashed_password = password + "notreallyhashed"
 
-    # In order to get the ID and authenticate, use AWS Cognito
+    # In order to authenticate, use AWS Cognito
     signup_result = utils.cognito_signup(username=email, password=hashed_password)
-    id = signup_result.user_id
     access_token = signup_result.access_token
     refresh_token = signup_result.refresh_token
+
+    # Use Alpaca-py to create broker account
+    broker_account = utils.create_broker_account(email=email)
+    id = str(broker_account.id) # TODO: fix type issue
+    created_at = broker_account.created_at
 
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
     # After getting ID and authenticating, create model and store it in DB
@@ -40,7 +44,7 @@ def create_account(db: Session, account: schemas.AccountCreate):
         id=id,
         name=name,
         email=email,
-        created_at=datetime.now().strftime(DATE_FORMAT),
+        created_at=created_at,
         hashed_password=hashed_password
     )
     db.add(db_user)
