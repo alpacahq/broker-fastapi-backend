@@ -20,10 +20,10 @@ async def root():
 
 from typing import List
 
-from fastapi import Depends, FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Request
 from sqlalchemy.orm import Session
 
-from . import crud, models, schemas
+from . import crud, models, schemas, utils
 from .database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
@@ -64,6 +64,20 @@ def read_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
 @app.get("/users/{user_id}", response_model=schemas.User)
 def read_user(user_id: int, db: Session = Depends(get_db)):
     db_user = crud.get_user(db, user_id=user_id)
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+@app.get("/accounts/{account_id}", response_model=schemas.Account)
+def read_account(account_id: str, request: Request, db: Session = Depends(get_db)):
+
+    # Must check authorization tokens!
+    # TODO: Separate this into another function
+    access_token = request.headers.get('access-token')
+    utils.authenticate_token(access_token)
+
+    print(f"In routes, account id type is: {type(account_id)}, {account_id}")
+    db_user = crud.get_account(db, account_id=account_id)
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user

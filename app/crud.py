@@ -4,10 +4,24 @@
 # load_dotenv()
 
 from datetime import datetime
+from time import strptime
 
 from sqlalchemy.orm import Session
 
 from . import models, schemas, utils
+
+
+def get_account(db: Session, account_id: str):
+    print(f"In crud, account id type is: {type(account_id)}, {account_id}")
+    return db.query(models.Account).filter(models.Account.id == account_id).first()
+
+
+def get_account_by_email(db: Session, email: str):
+    return db.query(models.Account).filter(models.Account.email == email).first()
+
+
+def get_accounts(db: Session, skip: int = 0, limit: int = 100):
+    return db.query(models.Account).offset(skip).limit(limit).all()
 
 
 def get_user(db: Session, user_id: int):
@@ -39,6 +53,9 @@ def create_account(db: Session, account: schemas.AccountCreate):
     created_at = broker_account.created_at
 
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+    created_at = datetime.strptime(created_at, DATE_FORMAT)
+    print(type(created_at))
+    print(created_at)
     # After getting ID and authenticating, create model and store it in DB
     db_user = models.Account(
         id=id,

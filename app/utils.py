@@ -1,7 +1,10 @@
 import os
 import boto3
+import cognitojwt
 from dotenv import load_dotenv
 load_dotenv()
+
+from fastapi import HTTPException
 
 from alpaca.broker.client import BrokerClient
 from alpaca.broker.models import (
@@ -143,3 +146,36 @@ def create_broker_account(email: str):
     # Make a request to create a new brokerage account
     account = broker_client.create_account(account_data)
     return account
+
+def get_broker_account(id: str):
+    id = "2280bc84-8b3e-478d-b3c4-7504d7e78724"
+    BROKER_API_KEY = os.environ.get("APCA_BROKER_API_KEY")
+    BROKER_SECRET_KEY = os.environ.get("APCA_BROKER_API_SECRET")
+
+    broker_client = BrokerClient(
+                    api_key=BROKER_API_KEY,
+                    secret_key=BROKER_SECRET_KEY,
+                    sandbox=True,
+                    )
+
+    account = broker_client.get_account_by_id(account_id=id)
+    return account
+    
+def authenticate_token(access_token: str):
+    REGION = os.environ.get('COGNITO_REGION_NAME')
+    USERPOOL_ID = os.environ.get('USER_POOL_ID')
+    APP_CLIENT_ID = os.environ.get('COGNITO_USER_CLIENT_ID')
+    # Attempt to decode the access token
+    try:
+        verified_claims: dict = cognitojwt.decode(
+            access_token,
+            REGION,
+            USERPOOL_ID,
+            app_client_id=APP_CLIENT_ID 
+        )
+    except:
+        raise HTTPException(
+            status_code=401,
+            detail="User is not authorized to get this resource"
+        )
+    # username = verified_claims["username"]
