@@ -16,20 +16,13 @@ from alpaca.broker.models import (
 from alpaca.broker.models.requests import AccountCreationRequest
 from alpaca.broker.enums import TaxIdType, FundingSource, AgreementType
 
-# Maybe should change this to Cognito Response?
-class SignupResult(object):
-    def __init__(self, user_id, access_token, refresh_token):
+
+# User ID from Cognito is currently not utilized
+class CognitoResponse(object):
+    def __init__(self, access_token, refresh_token, user_id=None):
+        self.access_token = access_token
+        self.refresh_token = refresh_token
         self.user_id = user_id
-        self.access_token = access_token
-        self.refresh_token = refresh_token
-
-
-# Getting quite messy, this will be temporary
-class ServiceResult(object):
-    def __init__(self, result, access_token, refresh_token):
-        self.result = result
-        self.access_token = access_token
-        self.refresh_token = refresh_token
 
 
 def cognito_signup(username: str, password: str):
@@ -60,13 +53,32 @@ def cognito_signup(username: str, password: str):
     access_token = auth_response['AuthenticationResult']['AccessToken']
     refresh_token = auth_response['AuthenticationResult']['RefreshToken']
 
-    signup_result = SignupResult(
-        user_id=user_sub,
+    signup_result = CognitoResponse(
         access_token=access_token,
-        refresh_token=refresh_token
+        refresh_token=refresh_token,
+        user_id=user_sub
     )
     return signup_result
 
+def cognito_login(username: str, password: str):
+    client = boto3.client('cognito-idp', region_name=os.environ.get('COGNITO_REGION_NAME'))
+    # Authenticate the user and return the tokens
+    auth_response = client.initiate_auth(
+        ClientId=os.environ.get('COGNITO_USER_CLIENT_ID'),
+        AuthFlow='USER_PASSWORD_AUTH',
+        AuthParameters={
+            'USERNAME': username,
+            'PASSWORD': password
+        }
+    )
+
+    access_token = auth_response['AuthenticationResult']['AccessToken']
+    refresh_token = auth_response['AuthenticationResult']['RefreshToken']
+    login_result = CognitoResponse(
+        access_token=access_token,
+        refresh_token=refresh_token
+    )
+    return login_result
 
 # What params do we want to take here?
 def create_broker_account(email: str):
@@ -148,7 +160,6 @@ def create_broker_account(email: str):
     return account
 
 def get_broker_account(id: str):
-    id = "2280bc84-8b3e-478d-b3c4-7504d7e78724"
     BROKER_API_KEY = os.environ.get("APCA_BROKER_API_KEY")
     BROKER_SECRET_KEY = os.environ.get("APCA_BROKER_API_SECRET")
 
