@@ -33,6 +33,11 @@ def get_db():
         db.close()
 
 
+@app.get("/")
+def get_default_route():
+    return {"message": "Server is running"}
+
+
 # User signs up for the platform
 @app.post("/platform/signup")
 def create_user(user: schemas.User):
