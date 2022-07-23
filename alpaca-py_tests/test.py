@@ -23,7 +23,7 @@ broker_client = BrokerClient(
 
 # Contact
 contact_data = Contact(
-            email_address="cool_alpaca5@example.com",
+            email_address="cool_alp22aca5@example.com",
             phone_number="555-666-7788",
             street_address=["20 N San Mateo Dr"],
             city="San Mateo",

@@ -50,7 +50,7 @@ def create_account(db: Session, account: schemas.AccountCreate):
 
     # Use Alpaca-py to create broker account
     broker_account = utils.create_broker_account(email=email)
-    id = str(broker_account.id) # TODO: fix type issue
+    id = str(broker_account.id)
     created_at = broker_account.created_at
 
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"

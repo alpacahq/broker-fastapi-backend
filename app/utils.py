@@ -178,6 +178,7 @@ def authenticate_token(access_token: str):
     APP_CLIENT_ID = os.environ.get('COGNITO_USER_CLIENT_ID')
     # Attempt to decode the access token
     try:
+        # Can get user properties from these claims
         verified_claims: dict = cognitojwt.decode(
             access_token,
             REGION,
@@ -189,4 +190,3 @@ def authenticate_token(access_token: str):
             status_code=401,
             detail="User is not authorized to get this resource"
         )
-    # username = verified_claims["username"]

@@ -1,5 +1,7 @@
-from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, DateTime
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String, Float, DateTime, text
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
+from uuid import uuid4
 
 from .database import Base
 
@@ -33,6 +35,5 @@ class Account(Base):
     email = Column(String, index=True)
     equity = Column(Float, default=float(0))
     is_active = Column(Boolean, default=True)
-    # created_at = Column(String)
     created_at = Column(DateTime)
     hashed_password = Column(String)
