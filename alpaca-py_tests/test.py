@@ -2,6 +2,8 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 
+from faker import Faker
+
 from alpaca.broker.client import BrokerClient
 from alpaca.broker.models import (
                         Contact,
@@ -21,23 +23,25 @@ broker_client = BrokerClient(
                 sandbox=True,
                 )
 
-# Contact
+fake = Faker()
+fake_profile = fake.profile()
+
 contact_data = Contact(
-            email_address="cool_alp22aca5@example.com",
-            phone_number="555-666-7788",
-            street_address=["20 N San Mateo Dr"],
-            city="San Mateo",
-            state="CA",
-            postal_code="94401",
-            country="USA"
+            email_address=fake.email(),
+            phone_number=fake.phone_number(),
+            street_address=[fake.street_address()],
+            city=fake.city(),
+            state=fake.state_abbr(),
+            postal_code=fake.postcode(),
+            country=fake.country()
             )
 # Identity
 identity_data = Identity(
-        given_name="John2",
-        middle_name="Smith",
-        family_name="Doe",
-        date_of_birth="1990-01-01",
-        tax_id="666-55-4321",
+        given_name=fake.first_name(),
+        middle_name=fake.first_name(),
+        family_name=fake.last_name(),
+        date_of_birth=str(fake.date_of_birth(minimum_age=21, maximum_age=81)),
+        tax_id=fake.ssn(),
         tax_id_type=TaxIdType.USA_SSN,
         country_of_citizenship="USA",
         country_of_birth="USA",
@@ -87,8 +91,5 @@ account_data = AccountCreationRequest(
 
 # Make a request to create a new brokerage account
 account = broker_client.create_account(account_data)
-user_id = account.id
-created_at = account.created_at
 
-print(type(user_id), user_id)
-print(type(created_at), created_at)
+print(account)

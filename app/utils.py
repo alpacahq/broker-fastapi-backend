@@ -4,6 +4,8 @@ import cognitojwt
 from dotenv import load_dotenv
 load_dotenv()
 
+from faker import Faker
+
 from fastapi import HTTPException
 
 from alpaca.broker.client import BrokerClient
@@ -80,8 +82,9 @@ def cognito_login(username: str, password: str):
     )
     return login_result
 
-# What params do we want to take here?
-def create_broker_account(email: str):
+def create_broker_account(email: str, first_name: str):
+    fake = Faker()
+
     BROKER_API_KEY = os.environ.get("APCA_BROKER_API_KEY")
     BROKER_SECRET_KEY = os.environ.get("APCA_BROKER_API_SECRET")
 
@@ -91,23 +94,22 @@ def create_broker_account(email: str):
                     sandbox=True,
                     )
 
-    # Contact
     contact_data = Contact(
-                email_address=email,
-                phone_number="555-666-7788",
-                street_address=["20 N San Mateo Dr"],
-                city="San Mateo",
-                state="CA",
-                postal_code="94401",
-                country="USA"
-                )
+            email_address=email,
+            phone_number=fake.phone_number(),
+            street_address=[fake.street_address()],
+            city=fake.city(),
+            state=fake.state_abbr(),
+            postal_code=fake.postcode(),
+            country=fake.country()
+            )
     # Identity
     identity_data = Identity(
-            given_name="John2",
-            middle_name="Smith",
-            family_name="Doe",
-            date_of_birth="1990-01-01",
-            tax_id="666-55-4321",
+            given_name=first_name,
+            middle_name=fake.first_name(),
+            family_name=fake.last_name(),
+            date_of_birth=str(fake.date_of_birth(minimum_age=21, maximum_age=81)),
+            tax_id=fake.ssn(),
             tax_id_type=TaxIdType.USA_SSN,
             country_of_citizenship="USA",
             country_of_birth="USA",
