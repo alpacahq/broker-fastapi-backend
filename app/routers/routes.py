@@ -2,11 +2,8 @@ from fastapi import APIRouter, HTTPException, Request, Depends
 from sqlalchemy.orm import Session
 
 from ..utils import utils
-
 from ..schemas import schemas
-
 from ..models import models
-
 from ..services import crud
 from ..config.database import SessionLocal, engine
 
@@ -46,9 +43,9 @@ def login_user(user: schemas.User):
     return login_result
 
 
-# Sign up for broker account
+# Sign up for brokerage account
 @router.post("/accounts/signup")
-def create_broker_account(account: schemas.AccountCreate, request: Request, db: Session = Depends(get_db)):
+def create_brokerage_account(account: schemas.AccountCreate, request: Request, db: Session = Depends(get_db)):
     # Authenticate token before querying DB
     access_token = request.headers.get('access-token')
     utils.authenticate_token(access_token)
@@ -59,9 +56,9 @@ def create_broker_account(account: schemas.AccountCreate, request: Request, db: 
     return crud.create_account(db=db, account=account)
 
 
-# Get broker account
+# Get brokerage account
 @router.get("/accounts/{account_id}", response_model=schemas.Account)
-def get_broker_account(account_id: str, request: Request, db: Session = Depends(get_db)):
+def get_brokerage_account(account_id: str, request: Request, db: Session = Depends(get_db)):
     # Authenticate token before querying DB
     access_token = request.headers.get('access-token')
     utils.authenticate_token(access_token)
