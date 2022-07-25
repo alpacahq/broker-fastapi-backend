@@ -15,7 +15,7 @@ from alpaca.broker.models import (
                         Disclosures,
                         Agreement
                     )
-from alpaca.broker.models.requests import AccountCreationRequest
+from alpaca.broker.requests import CreateAccountRequest
 from alpaca.broker.enums import TaxIdType, FundingSource, AgreementType
 
 from ..schemas import schemas
@@ -192,7 +192,7 @@ def create_broker_account(email: str, first_name: str):
     ]
 
     # ## CreateAccountRequest ## #
-    account_data = AccountCreationRequest(
+    account_data = CreateAccountRequest(
                             contact=contact_data,
                             identity=identity_data,
                             disclosures=disclosure_data,
