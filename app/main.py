@@ -14,71 +14,75 @@ async def root():
     return {"message": "Default route working"}
 
 """
-from fastapi import Depends, FastAPI, HTTPException, Request
-from sqlalchemy.orm import Session
+# from fastapi import Depends, FastAPI, HTTPException, Request
+# from sqlalchemy.orm import Session
 
-from . import crud, models, schemas, utils
-from .database import SessionLocal, engine
+from fastapi import FastAPI
 
-models.Base.metadata.create_all(bind=engine)
+from .routers import routes
+# from . import crud, models, schemas, utils
+# from .database import SessionLocal, engine
+
+# models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
+app.include_router(routes.router)
 
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-@app.get("/")
-def get_default_route():
-    return {"message": "Server is running"}
+# # Dependency
+# def get_db():
+#     db = SessionLocal()
+#     try:
+#         yield db
+#     finally:
+#         db.close()
 
 
-# User signs up for the platform
-@app.post("/platform/signup")
-def create_user(user: schemas.User):
-    username = user.email
-    password = user.password
-    signup_result = utils.cognito_signup(username, password)
-    return signup_result
+# @app.get("/")
+# def root():
+#     return {"message": "Server is running"}
 
 
-# User logs into the platform
-@app.post("/platform/login")
-def login_user(user: schemas.User):
-    username = user.email
-    password = user.password
-    login_result = utils.cognito_login(username, password)
-    return login_result
+# # User signs up for the platform
+# @app.post("/platform/signup")
+# def create_user(user: schemas.User):
+#     username = user.email
+#     password = user.password
+#     signup_result = utils.cognito_signup(username, password)
+#     return signup_result
 
 
-# Sign up for brokerage account
-@app.post("/accounts/signup")
-def create_brokerage_account(account: schemas.AccountCreate, request: Request, db: Session = Depends(get_db)):
-    # Authenticate token before querying DB
-    access_token = request.headers.get('access-token')
-    utils.authenticate_token(access_token)
-
-    db_user = crud.get_account_by_email(db, email=account.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return crud.create_account(db=db, account=account)
+# # User logs into the platform
+# @app.post("/platform/login")
+# def login_user(user: schemas.User):
+#     username = user.email
+#     password = user.password
+#     login_result = utils.cognito_login(username, password)
+#     return login_result
 
 
-# Get brokerage account
-@app.get("/accounts/{account_id}", response_model=schemas.Account)
-def get_brokerage_account(account_id: str, request: Request, db: Session = Depends(get_db)):
-    # Authenticate token before querying DB
-    access_token = request.headers.get('access-token')
-    utils.authenticate_token(access_token)
+# # Sign up for brokerage account
+# @app.post("/accounts/signup")
+# def create_brokerage_account(account: schemas.AccountCreate, request: Request, db: Session = Depends(get_db)):
+#     # Authenticate token before querying DB
+#     access_token = request.headers.get('access-token')
+#     utils.authenticate_token(access_token)
 
-    # If account is not found, raise 404. Else, return the queried account
-    db_user = crud.get_account(db, account_id=account_id)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return db_user
+#     db_user = crud.get_account_by_email(db, email=account.email)
+#     if db_user:
+#         raise HTTPException(status_code=400, detail="Email already registered")
+#     return crud.create_account(db=db, account=account)
+
+
+# # Get brokerage account
+# @app.get("/accounts/{account_id}", response_model=schemas.Account)
+# def get_brokerage_account(account_id: str, request: Request, db: Session = Depends(get_db)):
+#     # Authenticate token before querying DB
+#     access_token = request.headers.get('access-token')
+#     utils.authenticate_token(access_token)
+
+#     # If account is not found, raise 404. Else, return the queried account
+#     db_user = crud.get_account(db, account_id=account_id)
+#     if db_user is None:
+#         raise HTTPException(status_code=404, detail="User not found")
+#     return db_user
 
