@@ -71,7 +71,7 @@ def cognito_signup(username: str, password: str):
             Username=username,
             Password=password
         )
-    except Exception as e:
+    except Exception as e: # Generally, will trigger upon non-unique email
         raise HTTPException(status_code=400, detail=f"{e}")
     
     user_sub = response['UserSub']
@@ -113,7 +113,7 @@ def cognito_login(username: str, password: str):
                 'PASSWORD': password
             }
         )
-    except Exception as e:
+    except Exception as e: # Generally, will trigger upon wrong email/password
         raise HTTPException(status_code=400, detail=f"{e}")
 
     access_token = auth_response['AuthenticationResult']['AccessToken']

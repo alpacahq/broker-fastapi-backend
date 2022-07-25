@@ -1,2 +1,4 @@
 .env
 __pycache__
+alpaca-py_tests/
+cognito_tests/
