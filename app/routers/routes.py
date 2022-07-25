@@ -6,7 +6,7 @@ from ..schemas import schemas
 from ..models import models
 
 from .. import crud, utils
-from ..database import SessionLocal, engine
+from ..config.database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
 

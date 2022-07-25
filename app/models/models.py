@@ -1,6 +1,6 @@
 from sqlalchemy import Boolean, Column, String, Float, DateTime
 
-from ..database import Base
+from ..config.database import Base
 
 
 class Account(Base):
