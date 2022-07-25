@@ -1,7 +1,9 @@
 from fastapi import APIRouter, HTTPException, Request, Depends
 from sqlalchemy.orm import Session
 
-from .. import crud, models, schemas, utils
+from ..models import models
+
+from .. import crud, schemas, utils
 from ..database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)

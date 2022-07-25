@@ -2,7 +2,9 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
-from . import models, schemas, utils
+from .models import models
+
+from . import schemas, utils
 
 
 def get_account(db: Session, account_id: str):
