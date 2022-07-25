@@ -199,7 +199,7 @@ def create_broker_account(email: str, first_name: str):
                             agreements=agreement_data
                             )
 
-    # Make a request to create a new brokerage account
+    # Make a request to create a new broker account
     account = broker_client.create_account(account_data)
     return account
 

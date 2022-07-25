@@ -43,9 +43,9 @@ def login_user(user: schemas.User):
     return login_result
 
 
-# Sign up for brokerage account
+# Sign up for broker account
 @router.post("/accounts/signup")
-def create_brokerage_account(account: schemas.AccountCreate, request: Request, db: Session = Depends(get_db)):
+def create_broker_account(account: schemas.AccountCreate, request: Request, db: Session = Depends(get_db)):
     # Authenticate token before querying DB
     access_token = request.headers.get('access-token')
     utils.authenticate_token(access_token)
@@ -56,9 +56,9 @@ def create_brokerage_account(account: schemas.AccountCreate, request: Request, d
     return crud.create_account(db=db, account=account)
 
 
-# Get brokerage account
+# Get broker account
 @router.get("/accounts/{account_id}", response_model=schemas.Account)
-def get_brokerage_account(account_id: str, request: Request, db: Session = Depends(get_db)):
+def get_broker_account(account_id: str, request: Request, db: Session = Depends(get_db)):
     # Authenticate token before querying DB
     access_token = request.headers.get('access-token')
     utils.authenticate_token(access_token)
