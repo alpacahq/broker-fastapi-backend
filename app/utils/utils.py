@@ -7,10 +7,10 @@ from fastapi import HTTPException
 
 # User ID from Cognito is currently not utilized
 class CognitoResponse(object):
-    def __init__(self, access_token, refresh_token, user_id=None):
+    def __init__(self, access_token, refresh_token, cognito_user_id=None):
         self.access_token = access_token
         self.refresh_token = refresh_token
-        self.user_id = user_id
+        self.cognito_user_id = cognito_user_id
 
     
 def authenticate_token(access_token: str):

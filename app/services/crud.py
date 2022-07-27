@@ -97,7 +97,7 @@ def cognito_signup(username: str, password: str):
     signup_result = utils.CognitoResponse(
         access_token=access_token,
         refresh_token=refresh_token,
-        user_id=user_sub
+        cognito_user_id=user_sub
     )
     return signup_result
 
