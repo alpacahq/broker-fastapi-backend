@@ -21,13 +21,13 @@ def get_db():
 
 
 @router.get("/")
-def root():
+async def root():
     return {"message": "Server is running"}
 
 
 # User signs up for the platform
 @router.post("/platform/signup")
-def create_user(user: schemas.User):
+async def create_user(user: schemas.User):
     username = user.email
     password = user.password
     signup_result = crud.cognito_signup(username, password)
@@ -36,7 +36,7 @@ def create_user(user: schemas.User):
 
 # User logs into the platform
 @router.post("/platform/login")
-def login_user(user: schemas.User):
+async def login_user(user: schemas.User):
     username = user.email
     password = user.password
     login_result = crud.cognito_login(username, password)
@@ -45,7 +45,7 @@ def login_user(user: schemas.User):
 
 # Sign up for brokerage account
 @router.post("/accounts/signup")
-def create_brokerage_account(account: schemas.AccountCreate, request: Request, db: Session = Depends(get_db)):
+async def create_brokerage_account(account: schemas.AccountCreate, request: Request, db: Session = Depends(get_db)):
     # Authenticate token before querying DB
     access_token = request.headers.get('access-token')
     utils.authenticate_token(access_token)
@@ -58,7 +58,7 @@ def create_brokerage_account(account: schemas.AccountCreate, request: Request, d
 
 # Get brokerage account
 @router.get("/accounts/{account_id}", response_model=schemas.Account)
-def get_brokerage_account(account_id: str, request: Request, db: Session = Depends(get_db)):
+async def get_brokerage_account(account_id: str, request: Request, db: Session = Depends(get_db)):
     # Authenticate token before querying DB
     access_token = request.headers.get('access-token')
     utils.authenticate_token(access_token)
