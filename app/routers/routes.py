@@ -2,7 +2,6 @@ from fastapi import APIRouter, Request, Depends
 from sqlalchemy.orm import Session
 
 from ..schemas import schemas
-# from ..models import models
 from ..services import crud
 from ..config import database
 

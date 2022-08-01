@@ -33,13 +33,6 @@ def get_account(db: Session, account_id: str, request: Request):
     return db_user
 
 
-def get_accounts(db: Session, request: Request, skip: int = 0, limit: int = 100):
-    # Authenticate token before querying DB
-    access_token = request.headers.get('access-token')
-    utils.authenticate_token(access_token)
-    return db.query(models.Account).offset(skip).limit(limit).all()
-
-
 def get_account_by_email(db: Session, email: str, request: Request):
     # Authenticate token before querying DB
     access_token = request.headers.get('access-token')
@@ -47,37 +40,6 @@ def get_account_by_email(db: Session, email: str, request: Request):
     account = db.query(models.Account).filter(models.Account.email == email).first()
     return account
 
-
-def create_account(db: Session, account: schemas.AccountCreate, request: Request):
-    # Check if email already exists in the DB
-    db_user = get_account_by_email(db, email=account.email, request=request)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-
-    name = account.name
-    email = account.email
-    password = account.password
-    hashed_password = password + "notreallyhashed"
-
-    # Use Alpaca-py to create broker account
-    broker_account = create_broker_account(email=email, first_name=name)
-    id = str(broker_account.id)
-    created_at = broker_account.created_at
-
-    DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
-    created_at = datetime.strptime(created_at, DATE_FORMAT)
-    # After getting ID and authenticating, create model and store it in DB
-    db_user = models.Account(
-        id=id,
-        name=name,
-        email=email,
-        created_at=created_at,
-        hashed_password=hashed_password
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
 
 def cognito_signup(username: str, password: str):
     # In order to get the ID and authenticate, use AWS Cognito
@@ -118,6 +80,7 @@ def cognito_signup(username: str, password: str):
     )
     return signup_result
 
+
 def cognito_login(username: str, password: str):
     client = boto3.client('cognito-idp', region_name=os.environ.get('COGNITO_REGION_NAME'))
     # Authenticate the user and return the tokens
@@ -140,6 +103,39 @@ def cognito_login(username: str, password: str):
         refresh_token=refresh_token
     )
     return login_result
+
+
+def create_account(db: Session, account: schemas.AccountCreate, request: Request):
+    # Check if email already exists in the DB
+    db_user = get_account_by_email(db, email=account.email, request=request)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    name = account.name
+    email = account.email
+    password = account.password
+    hashed_password = password + "notreallyhashed"
+
+    # Use Alpaca-py to create broker account
+    broker_account = create_broker_account(email=email, first_name=name)
+    id = str(broker_account.id)
+    created_at = broker_account.created_at
+
+    DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+    created_at = datetime.strptime(created_at, DATE_FORMAT)
+    # After getting ID and authenticating, create model and store it in DB
+    db_user = models.Account(
+        id=id,
+        name=name,
+        email=email,
+        created_at=created_at,
+        hashed_password=hashed_password
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
 
 def create_broker_account(email: str, first_name: str):
     fake = Faker()
@@ -219,6 +215,7 @@ def create_broker_account(email: str, first_name: str):
     # Make a request to create a new brokerage account
     account = broker_client.create_account(account_data)
     return account
+
 
 def get_broker_account(id: str):
     BROKER_API_KEY = os.environ.get("APCA_BROKER_API_KEY")
