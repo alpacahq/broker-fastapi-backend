@@ -118,7 +118,7 @@ def create_account(db: Session, account: schemas.AccountCreate, request: Request
 
     # Use Alpaca-py to create broker account
     broker_account = create_broker_account(email=email, first_name=name)
-    id = str(broker_account.id)
+    id = str(broker_account.id) #TODO: Change to UUID?
     created_at = broker_account.created_at
 
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
@@ -214,18 +214,4 @@ def create_broker_account(email: str, first_name: str):
 
     # Make a request to create a new brokerage account
     account = broker_client.create_account(account_data)
-    return account
-
-
-def get_broker_account(id: str):
-    BROKER_API_KEY = os.environ.get("APCA_BROKER_API_KEY")
-    BROKER_SECRET_KEY = os.environ.get("APCA_BROKER_API_SECRET")
-
-    broker_client = BrokerClient(
-                    api_key=BROKER_API_KEY,
-                    secret_key=BROKER_SECRET_KEY,
-                    sandbox=True,
-                    )
-
-    account = broker_client.get_account_by_id(account_id=id)
     return account
