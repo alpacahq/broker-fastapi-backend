@@ -1,7 +1,6 @@
-from fastapi import APIRouter, HTTPException, Request, Depends
+from fastapi import APIRouter, Request, Depends
 from sqlalchemy.orm import Session
 
-from ..utils import utils
 from ..schemas import schemas
 from ..models import models
 from ..services import crud
@@ -46,24 +45,12 @@ async def login_user(user: schemas.User):
 # Sign up for brokerage account
 @router.post("/accounts/signup")
 async def create_brokerage_account(account: schemas.AccountCreate, request: Request, db: Session = Depends(get_db)):
-    # Authenticate token before querying DB
-    access_token = request.headers.get('access-token')
-    utils.authenticate_token(access_token)
-
-    db_user = crud.get_account_by_email(db, email=account.email)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-    return crud.create_account(db=db, account=account)
+    account = crud.create_account(db=db, account=account, request=request)
+    return account
 
 
 # Get brokerage account
 @router.get("/accounts/{account_id}", response_model=schemas.Account)
 async def get_brokerage_account(account_id: str, request: Request, db: Session = Depends(get_db)):
-    # Authenticate token before querying DB
-    access_token = request.headers.get('access-token')
-    utils.authenticate_token(access_token)
-
-    db_user = crud.get_account(db, account_id=account_id)
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+    db_user = crud.get_account(db, account_id=account_id, request=request)
     return db_user

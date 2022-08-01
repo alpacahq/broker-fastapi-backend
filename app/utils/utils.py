@@ -29,5 +29,5 @@ def authenticate_token(access_token: str):
     except:
         raise HTTPException(
             status_code=401,
-            detail="User is not authorized to get this resource"
+            detail="User is not authorized to access this resource. Check access token."
         )

@@ -6,7 +6,7 @@ import boto3
 from datetime import datetime
 from faker import Faker
 from sqlalchemy.orm import Session
-from fastapi import HTTPException
+from fastapi import HTTPException, Request
 
 from alpaca.broker.client import BrokerClient
 from alpaca.broker.models import (
@@ -23,20 +23,37 @@ from ..models import models
 from ..utils import utils
 
 
-def get_account(db: Session, account_id: str):
-    return db.query(models.Account).filter(models.Account.id == account_id).first()
+def get_account(db: Session, account_id: str, request: Request):
+    # Authenticate token before querying DB
+    access_token = request.headers.get('access-token')
+    utils.authenticate_token(access_token)
+    db_user = db.query(models.Account).filter(models.Account.id == account_id).first()
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
 
 
-def get_accounts(db: Session, skip: int = 0, limit: int = 100):
+def get_accounts(db: Session, request: Request, skip: int = 0, limit: int = 100):
+    # Authenticate token before querying DB
+    access_token = request.headers.get('access-token')
+    utils.authenticate_token(access_token)
     return db.query(models.Account).offset(skip).limit(limit).all()
 
 
-def get_account_by_email(db: Session, email: str):
+def get_account_by_email(db: Session, email: str, request: Request):
+    # Authenticate token before querying DB
+    access_token = request.headers.get('access-token')
+    utils.authenticate_token(access_token)
     account = db.query(models.Account).filter(models.Account.email == email).first()
     return account
 
 
-def create_account(db: Session, account: schemas.AccountCreate):
+def create_account(db: Session, account: schemas.AccountCreate, request: Request):
+    # Check if email already exists in the DB
+    db_user = get_account_by_email(db, email=account.email, request=request)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
     name = account.name
     email = account.email
     password = account.password
