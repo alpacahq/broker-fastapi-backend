@@ -27,6 +27,7 @@ def get_account(db: Session, account_id: str, request: Request):
     # Authenticate token before querying DB
     access_token = request.headers.get('access-token')
     utils.authenticate_token(access_token)
+
     db_user = db.query(models.Account).filter(models.Account.id == account_id).first()
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
@@ -37,6 +38,7 @@ def get_account_by_email(db: Session, email: str, request: Request):
     # Authenticate token before querying DB
     access_token = request.headers.get('access-token')
     utils.authenticate_token(access_token)
+
     account = db.query(models.Account).filter(models.Account.email == email).first()
     return account
 
@@ -120,9 +122,9 @@ def create_account(db: Session, account: schemas.AccountCreate, request: Request
     broker_account = create_broker_account(email=email, first_name=name)
     id = str(broker_account.id) #TODO: Change to UUID?
     created_at = broker_account.created_at
-
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
     created_at = datetime.strptime(created_at, DATE_FORMAT)
+
     # After getting ID and authenticating, create model and store it in DB
     db_user = models.Account(
         id=id,
