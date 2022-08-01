@@ -2,21 +2,13 @@ from fastapi import APIRouter, Request, Depends
 from sqlalchemy.orm import Session
 
 from ..schemas import schemas
-from ..models import models
+# from ..models import models
 from ..services import crud
-from ..config.database import SessionLocal, engine
+from ..config import database
 
-models.Base.metadata.create_all(bind=engine)
+database.create_tables()
 
 router = APIRouter()
-
-# Dependency
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
 
 @router.get("/")
@@ -44,13 +36,13 @@ async def login_user(user: schemas.User):
 
 # Sign up for brokerage account
 @router.post("/accounts/signup")
-async def create_brokerage_account(account: schemas.AccountCreate, request: Request, db: Session = Depends(get_db)):
+async def create_brokerage_account(account: schemas.AccountCreate, request: Request, db: Session = Depends(database.get_db)):
     account = crud.create_account(db=db, account=account, request=request)
     return account
 
 
 # Get brokerage account
 @router.get("/accounts/{account_id}", response_model=schemas.Account)
-async def get_brokerage_account(account_id: str, request: Request, db: Session = Depends(get_db)):
+async def get_brokerage_account(account_id: str, request: Request, db: Session = Depends(database.get_db)):
     db_user = crud.get_account(db, account_id=account_id, request=request)
     return db_user
