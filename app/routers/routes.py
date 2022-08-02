@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from sqlalchemy.orm import Session
+from uuid import UUID
 
 from ..schemas import schemas
 from ..services import crud
@@ -42,6 +43,6 @@ async def create_brokerage_account(account: schemas.AccountCreate, request: Requ
 
 # Get brokerage account
 @router.get("/accounts/{account_id}", response_model=schemas.Account)
-async def get_brokerage_account(account_id: str, request: Request, db: Session = Depends(database.get_db)):
+async def get_brokerage_account(account_id: UUID, request: Request, db: Session = Depends(database.get_db)):
     db_user = crud.get_account(db, account_id=account_id, request=request)
     return db_user

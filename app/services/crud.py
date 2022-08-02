@@ -7,6 +7,7 @@ from datetime import datetime
 from faker import Faker
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, Request
+from uuid import UUID
 
 from alpaca.broker.client import BrokerClient
 from alpaca.broker.models import (
@@ -23,7 +24,7 @@ from ..models import models
 from ..utils import utils
 
 
-def get_account(db: Session, account_id: str, request: Request):
+def get_account(db: Session, account_id: UUID, request: Request):
     # Authenticate token before querying DB
     access_token = request.headers.get('access-token')
     utils.authenticate_token(access_token)

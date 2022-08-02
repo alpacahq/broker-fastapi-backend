@@ -8,7 +8,6 @@ from ..config.database import Base
 class Account(Base):
     __tablename__ = "accounts"
 
-    # id = Column(String, primary_key=True, index=True)
     id = Column(UUID(as_uuid=True), primary_key=True, index=True, default=uuid4)
     name = Column(String, index=True)
     email = Column(String, index=True)
