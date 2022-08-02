@@ -120,7 +120,8 @@ def create_account(db: Session, account: schemas.AccountCreate, request: Request
 
     # Use Alpaca-py to create broker account
     broker_account = create_broker_account(email=email, first_name=name)
-    id = str(broker_account.id) #TODO: Change to UUID?
+    # id = str(broker_account.id) #TODO: Change to UUID?
+    id = broker_account.id # Is type UUID
     created_at = broker_account.created_at
     DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
     created_at = datetime.strptime(created_at, DATE_FORMAT)

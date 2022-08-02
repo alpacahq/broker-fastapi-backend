@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 
 from pydantic import BaseModel
 
@@ -19,7 +20,7 @@ class AccountCreate(AccountBase):
 
 
 class Account(AccountBase):
-    id: str
+    id: UUID
     equity: float
     is_active: bool
     created_at: datetime
