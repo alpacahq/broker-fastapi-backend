@@ -24,26 +24,6 @@ from ..models import models
 from ..utils import utils
 
 
-def get_account(db: Session, account_id: UUID, request: Request):
-    # Authenticate token before querying DB
-    access_token = request.headers.get('access-token')
-    utils.authenticate_token(access_token)
-
-    db_user = db.query(models.Account).filter(models.Account.id == account_id).first()
-    if db_user is None:
-        raise HTTPException(status_code=404, detail="User not found")
-    return db_user
-
-
-def get_account_by_email(db: Session, email: str, request: Request):
-    # Authenticate token before querying DB
-    access_token = request.headers.get('access-token')
-    utils.authenticate_token(access_token)
-
-    account = db.query(models.Account).filter(models.Account.email == email).first()
-    return account
-
-
 def cognito_signup(username: str, password: str):
     # In order to get the ID and authenticate, use AWS Cognito
     client = boto3.client('cognito-idp', region_name=os.environ.get('COGNITO_REGION_NAME'))
@@ -106,39 +86,6 @@ def cognito_login(username: str, password: str):
         refresh_token=refresh_token
     )
     return login_result
-
-
-def create_account(db: Session, account: schemas.AccountCreate, request: Request):
-    # Check if email already exists in the DB
-    db_user = get_account_by_email(db, email=account.email, request=request)
-    if db_user:
-        raise HTTPException(status_code=400, detail="Email already registered")
-
-    name = account.name
-    email = account.email
-    password = account.password
-    hashed_password = password + "notreallyhashed"
-
-    # Use Alpaca-py to create broker account
-    broker_account = create_broker_account(email=email, first_name=name)
-    # id = str(broker_account.id) #TODO: Change to UUID?
-    id = broker_account.id # Is type UUID
-    created_at = broker_account.created_at
-    DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
-    created_at = datetime.strptime(created_at, DATE_FORMAT)
-
-    # After getting ID and authenticating, create model and store it in DB
-    db_user = models.Account(
-        id=id,
-        name=name,
-        email=email,
-        created_at=created_at,
-        hashed_password=hashed_password
-    )
-    db.add(db_user)
-    db.commit()
-    db.refresh(db_user)
-    return db_user
 
 
 def create_broker_account(email: str, first_name: str):
@@ -218,4 +165,56 @@ def create_broker_account(email: str, first_name: str):
 
     # Make a request to create a new brokerage account
     account = broker_client.create_account(account_data)
+    return account
+
+
+def create_account(db: Session, account: schemas.AccountCreate, request: Request):
+    # Check if email already exists in the DB
+    db_user = get_account_by_email(db, email=account.email, request=request)
+    if db_user:
+        raise HTTPException(status_code=400, detail="Email already registered")
+
+    name = account.name
+    email = account.email
+    password = account.password
+    hashed_password = password + "notreallyhashed"
+
+    # Use Alpaca-py to create broker account
+    broker_account = create_broker_account(email=email, first_name=name)
+    id = broker_account.id # Is type UUID
+    created_at = broker_account.created_at
+    DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+    created_at = datetime.strptime(created_at, DATE_FORMAT)
+
+    # After getting ID and authenticating, create model and store it in DB
+    db_user = models.Account(
+        id=id,
+        name=name,
+        email=email,
+        created_at=created_at,
+        hashed_password=hashed_password
+    )
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+def get_account(db: Session, account_id: UUID, request: Request):
+    # Authenticate token before querying DB
+    access_token = request.headers.get('access-token')
+    utils.authenticate_token(access_token)
+
+    db_user = db.query(models.Account).filter(models.Account.id == account_id).first()
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
+
+def get_account_by_email(db: Session, email: str, request: Request):
+    # Authenticate token before querying DB
+    access_token = request.headers.get('access-token')
+    utils.authenticate_token(access_token)
+
+    account = db.query(models.Account).filter(models.Account.email == email).first()
     return account
