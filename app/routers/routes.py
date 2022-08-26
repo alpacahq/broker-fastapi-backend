@@ -1,13 +1,14 @@
 from fastapi import APIRouter, Request, Depends
 from sqlalchemy.orm import Session
-from uuid import UUID
-from typing import Union
+from plaid.api import plaid_api
 
 from ..schemas import schemas
 from ..services import crud
-from ..config import database
+from ..config import database, plaid
 
 database.create_tables()
+
+plaid_client = plaid.get_plaid_client()
 
 router = APIRouter()
 
@@ -44,14 +45,19 @@ async def create_brokerage_account(account: schemas.AccountCreate, request: Requ
 
 # Get brokerage account
 @router.get("/accounts/{identifier}", response_model=schemas.Account)
-async def get_brokerage_account(identifier: Union[str, UUID], request: Request, db: Session = Depends(database.get_db)):
+async def get_brokerage_account(identifier: str, request: Request, db: Session = Depends(database.get_db)):
     db_user = crud.get_account(db, identifier=identifier, request=request)
     return db_user
 
 
 # Create Plaid link token
-@router.post("/plaid/create_link_token")
-def create_link_token(identifier: Union[str, UUID], request: Request, db: Session = Depends(database.get_db)):
+@router.post("/plaid/create_link_token/{identifier}")
+def create_link_token(identifier: str, 
+                      request: Request,
+                      db: Session=Depends(database.get_db)):
     # Get the client_user_id by searching for the current user
-    link_token = crud.create_link_token(db, identifier=identifier, request=request)
+    link_token = crud.get_link_token(db,
+                                     identifier=identifier,
+                                     request=request,
+                                     plaid_client=plaid_client)
     return link_token

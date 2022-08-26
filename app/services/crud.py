@@ -1,3 +1,4 @@
+from ast import Str
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -19,6 +20,12 @@ from alpaca.broker.models import (
                     )
 from alpaca.broker.requests import CreateAccountRequest
 from alpaca.broker.enums import TaxIdType, FundingSource, AgreementType
+
+from plaid.model.link_token_create_request import LinkTokenCreateRequest
+from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
+from plaid.model.products import Products
+from plaid.model.country_code import CountryCode
+from plaid.api import plaid_api
 
 from ..schemas import schemas
 from ..models import models
@@ -201,7 +208,7 @@ def create_account(db: Session, account: schemas.AccountCreate, request: Request
     return db_user
 
 
-def get_account(db: Session, identifier: Union[UUID, str], request: Request):
+def get_account(db: Session, identifier: str, request: Request):
     # Authenticate token before querying DB
     access_token = request.headers.get('access-token')
     utils.authenticate_token(access_token)
@@ -223,3 +230,26 @@ def get_account_by_email(db: Session, email: str, request: Request):
 
     account = db.query(models.Account).filter(models.Account.email == email).first()
     return account
+
+def get_link_token(db: Session, identifier: str, request: Request, plaid_client: plaid_api.PlaidApi):
+    # Get the client_user_id by searching for the current user
+    print(f"Top of get link")
+    account = get_account(db, identifier=identifier, request=request)
+    client_id = str(account.id)
+    # Create a link_token for the given user
+    request = LinkTokenCreateRequest(
+            products=[Products("auth")],
+            client_name="Plaid Test App",
+            country_codes=[CountryCode('US')],
+            # redirect_uri='https://domainname.com/oauth-page.html',
+            language='en',
+            webhook='https://webhook.example.com',
+            user=LinkTokenCreateRequestUser(
+                client_user_id=client_id
+            )
+        )
+    print(f"Before request")
+    response = plaid_client.link_token_create(request)
+    print(f"After request")
+    # Send the data to the client
+    return response.to_dict()

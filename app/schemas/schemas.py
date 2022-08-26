@@ -27,3 +27,7 @@ class Account(AccountBase):
 
     class Config:
         orm_mode = True
+
+
+class Identifier(BaseModel):
+    identifier: str
