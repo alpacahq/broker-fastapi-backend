@@ -8,6 +8,7 @@ from faker import Faker
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, Request
 from uuid import UUID
+from typing import Union
 
 from alpaca.broker.client import BrokerClient
 from alpaca.broker.models import (
@@ -200,12 +201,16 @@ def create_account(db: Session, account: schemas.AccountCreate, request: Request
     return db_user
 
 
-def get_account(db: Session, account_id: UUID, request: Request):
+def get_account(db: Session, identifier: Union[UUID, str], request: Request):
     # Authenticate token before querying DB
     access_token = request.headers.get('access-token')
     utils.authenticate_token(access_token)
 
-    db_user = db.query(models.Account).filter(models.Account.id == account_id).first()
+    try:
+        identifier = UUID(identifier)
+        db_user = db.query(models.Account).filter(models.Account.id == identifier).first()
+    except:
+        db_user = db.query(models.Account).filter(models.Account.email == identifier).first()
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
