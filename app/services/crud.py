@@ -23,6 +23,8 @@ from alpaca.broker.enums import TaxIdType, FundingSource, AgreementType
 
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
 from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
+from plaid.model.item_public_token_exchange_request import ItemPublicTokenExchangeRequest
+from plaid.model.processor_token_create_request import ProcessorTokenCreateRequest
 from plaid.model.products import Products
 from plaid.model.country_code import CountryCode
 from plaid.api import plaid_api
@@ -249,3 +251,24 @@ def get_link_token(db: Session, identifier: str, request: Request, plaid_client:
     response = plaid_client.link_token_create(request)
     # Send the data to the client
     return response.to_dict()
+
+def get_processor_token(plaid_response: schemas.PlaidExchangeInfo, plaid_client: plaid_api.PlaidApi):
+    # Change sandbox to development to test with live users;
+    # Change to production when you're ready to go live!
+
+    # Exchange the public token from Plaid Link for an access token.
+    public_token = plaid_response.public_token
+    account_id = plaid_response.account_id
+    exchange_request = ItemPublicTokenExchangeRequest(public_token=public_token)
+    exchange_token_response = plaid_client.item_public_token_exchange(exchange_request)
+    access_token = exchange_token_response['access_token']
+
+    # Create a processor token for a specific account id.
+    create_request = ProcessorTokenCreateRequest(
+        access_token=access_token,
+        account_id=account_id,
+        processor="alpaca"
+    )
+    create_response = plaid_client.processor_token_create(create_request)
+    processor_token = create_response['processor_token']
+    return processor_token

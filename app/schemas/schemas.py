@@ -31,3 +31,8 @@ class Account(AccountBase):
 
 class Identifier(BaseModel):
     identifier: str
+
+
+class PlaidExchangeInfo(BaseModel):
+    public_token: str
+    account_id: str

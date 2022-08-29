@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends, Header
+from typing import Union
 from sqlalchemy.orm import Session
 from plaid.api import plaid_api
 
@@ -46,18 +47,25 @@ async def create_brokerage_account(account: schemas.AccountCreate, request: Requ
 # Get brokerage account
 @router.get("/accounts/{identifier}", response_model=schemas.Account)
 async def get_brokerage_account(identifier: str, request: Request, db: Session = Depends(database.get_db)):
-    db_user = crud.get_account(db, identifier=identifier.identifier, request=request)
+    db_user = crud.get_account(db, identifier=identifier, request=request)
     return db_user
 
-
 # Create Plaid link token
-@router.post("/plaid/create_link_token/")
+@router.post("/plaid/create_link_token")
 def create_link_token(identifier: schemas.Identifier, 
                       request: Request,
-                      db: Session=Depends(database.get_db)):
+                      db: Session=Depends(database.get_db),
+                      access_token: Union[str, None] = Header(default=None)):
     # Get the client_user_id by searching for the current user
     link_token = crud.get_link_token(db,
                                      identifier=identifier.identifier,
                                      request=request,
                                      plaid_client=plaid_client)
     return link_token
+
+
+# Get processesor token from public token
+@router.post("/plaid/exchange_token")
+async def exchange_token(plaid_response: schemas.PlaidExchangeInfo):
+    processor_token = crud.get_processor_token(plaid_response, plaid_client)
+    return processor_token
