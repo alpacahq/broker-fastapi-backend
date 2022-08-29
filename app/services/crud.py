@@ -233,7 +233,6 @@ def get_account_by_email(db: Session, email: str, request: Request):
 
 def get_link_token(db: Session, identifier: str, request: Request, plaid_client: plaid_api.PlaidApi):
     # Get the client_user_id by searching for the current user
-    print(f"Top of get link")
     account = get_account(db, identifier=identifier, request=request)
     client_id = str(account.id)
     # Create a link_token for the given user
@@ -241,15 +240,12 @@ def get_link_token(db: Session, identifier: str, request: Request, plaid_client:
             products=[Products("auth")],
             client_name="Plaid Test App",
             country_codes=[CountryCode('US')],
-            # redirect_uri='https://domainname.com/oauth-page.html',
             language='en',
             webhook='https://webhook.example.com',
             user=LinkTokenCreateRequestUser(
                 client_user_id=client_id
             )
         )
-    print(f"Before request")
     response = plaid_client.link_token_create(request)
-    print(f"After request")
     # Send the data to the client
     return response.to_dict()

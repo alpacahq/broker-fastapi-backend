@@ -46,18 +46,18 @@ async def create_brokerage_account(account: schemas.AccountCreate, request: Requ
 # Get brokerage account
 @router.get("/accounts/{identifier}", response_model=schemas.Account)
 async def get_brokerage_account(identifier: str, request: Request, db: Session = Depends(database.get_db)):
-    db_user = crud.get_account(db, identifier=identifier, request=request)
+    db_user = crud.get_account(db, identifier=identifier.identifier, request=request)
     return db_user
 
 
 # Create Plaid link token
-@router.post("/plaid/create_link_token/{identifier}")
-def create_link_token(identifier: str, 
+@router.post("/plaid/create_link_token/")
+def create_link_token(identifier: schemas.Identifier, 
                       request: Request,
                       db: Session=Depends(database.get_db)):
     # Get the client_user_id by searching for the current user
     link_token = crud.get_link_token(db,
-                                     identifier=identifier,
+                                     identifier=identifier.identifier,
                                      request=request,
                                      plaid_client=plaid_client)
     return link_token
