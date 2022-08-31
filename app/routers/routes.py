@@ -50,22 +50,38 @@ async def get_brokerage_account(identifier: str, request: Request, db: Session =
     db_user = crud.get_account(db, identifier=identifier, request=request)
     return db_user
 
+# # Create Plaid link token
+# @router.post("/plaid/create_link_token")
+# def create_link_token(identifier: schemas.Identifier, 
+#                       request: Request,
+#                       db: Session=Depends(database.get_db),
+#                       access_token: Union[str, None] = Header(default=None)):
+#     # Get the client_user_id by searching for the current user
+#     link_token = crud.get_link_token(db,
+#                                      identifier=identifier.identifier,
+#                                      request=request,
+#                                      plaid_client=plaid_client)
+#     return link_token
+
+
 # Create Plaid link token
 @router.post("/plaid/create_link_token")
-def create_link_token(identifier: schemas.Identifier, 
+def create_link_token( 
                       request: Request,
-                      db: Session=Depends(database.get_db),
-                      access_token: Union[str, None] = Header(default=None)):
+                      db: Session=Depends(database.get_db)):
+                    #   access_token: Union[str, None] = Header(default=None)):
     # Get the client_user_id by searching for the current user
     link_token = crud.get_link_token(db,
-                                     identifier=identifier.identifier,
+                                     identifier='helluva@test.ca',
                                      request=request,
                                      plaid_client=plaid_client)
-    return link_token
+    print(link_token)
+    return {"link_token": link_token}
 
 
 # Get processesor token from public token
-@router.post("/plaid/exchange_token")
+@router.post("/plaid/exchange_public_token")
 async def exchange_token(plaid_response: schemas.PlaidExchangeInfo):
+    print(plaid_response)
     processor_token = crud.get_processor_token(plaid_response, plaid_client)
     return processor_token

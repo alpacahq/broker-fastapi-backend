@@ -235,8 +235,8 @@ def get_account_by_email(db: Session, email: str, request: Request):
 
 def get_link_token(db: Session, identifier: str, request: Request, plaid_client: plaid_api.PlaidApi):
     # Get the client_user_id by searching for the current user
-    account = get_account(db, identifier=identifier, request=request)
-    client_id = str(account.id)
+    # account = get_account(db, identifier=identifier, request=request)
+    # client_id = str(account.id)
     # Create a link_token for the given user
     request = LinkTokenCreateRequest(
             products=[Products("auth")],
@@ -245,7 +245,7 @@ def get_link_token(db: Session, identifier: str, request: Request, plaid_client:
             language='en',
             webhook='https://webhook.example.com',
             user=LinkTokenCreateRequestUser(
-                client_user_id=client_id
+                client_user_id=os.environ.get("PLAID_CLIENT_ID")
             )
         )
     response = plaid_client.link_token_create(request)
@@ -271,4 +271,5 @@ def get_processor_token(plaid_response: schemas.PlaidExchangeInfo, plaid_client:
     )
     create_response = plaid_client.processor_token_create(create_request)
     processor_token = create_response['processor_token']
+    print(f"processor token is: {processor_token}")
     return processor_token
