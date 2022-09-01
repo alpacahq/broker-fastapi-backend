@@ -9,7 +9,6 @@ from faker import Faker
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, Request
 from uuid import UUID
-from typing import Union
 
 from alpaca.broker.client import BrokerClient
 from alpaca.broker.models import (
@@ -18,8 +17,8 @@ from alpaca.broker.models import (
                         Disclosures,
                         Agreement
                     )
-from alpaca.broker.requests import CreateAccountRequest
-from alpaca.broker.enums import TaxIdType, FundingSource, AgreementType
+from alpaca.broker.requests import CreateAccountRequest, CreatePlaidRelationshipRequest, CreateACHTransferRequest
+from alpaca.broker.enums import TaxIdType, FundingSource, AgreementType, TransferDirection, TransferTiming
 
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
 from plaid.model.link_token_create_request_user import LinkTokenCreateRequestUser
@@ -101,14 +100,7 @@ def cognito_login(username: str, password: str):
 def create_broker_account(email: str, first_name: str):
     fake = Faker()
 
-    BROKER_API_KEY = os.environ.get("APCA_BROKER_API_KEY")
-    BROKER_SECRET_KEY = os.environ.get("APCA_BROKER_API_SECRET")
-
-    broker_client = BrokerClient(
-                    api_key=BROKER_API_KEY,
-                    secret_key=BROKER_SECRET_KEY,
-                    sandbox=True,
-                    )
+    broker_client = get_broker_client()
 
     contact_data = Contact(
             email_address=email,
@@ -233,10 +225,20 @@ def get_account_by_email(db: Session, email: str, request: Request):
     account = db.query(models.Account).filter(models.Account.email == email).first()
     return account
 
-def get_link_token(db: Session, identifier: str, request: Request, plaid_client: plaid_api.PlaidApi):
-    # Get the client_user_id by searching for the current user
-    # account = get_account(db, identifier=identifier, request=request)
-    # client_id = str(account.id)
+def get_broker_client():
+    BROKER_API_KEY = os.environ.get("APCA_BROKER_API_KEY")
+    BROKER_SECRET_KEY = os.environ.get("APCA_BROKER_API_SECRET")
+
+    broker_client = BrokerClient(
+                    api_key=BROKER_API_KEY,
+                    secret_key=BROKER_SECRET_KEY,
+                    sandbox=True,
+                    )
+    return broker_client
+
+def get_link_token(plaid_client: plaid_api.PlaidApi, request: Request):
+    access_token = request.headers.get('access-token')
+    utils.authenticate_token(access_token)
     # Create a link_token for the given user
     request = LinkTokenCreateRequest(
             products=[Products("auth")],
@@ -252,7 +254,11 @@ def get_link_token(db: Session, identifier: str, request: Request, plaid_client:
     # Send the data to the client
     return response.to_dict()
 
-def get_processor_token(plaid_response: schemas.PlaidExchangeInfo, plaid_client: plaid_api.PlaidApi):
+def get_processor_token(plaid_response: schemas.PlaidExchangeInfo, 
+                        plaid_client: plaid_api.PlaidApi,
+                        request: Request):
+    access_token = request.headers.get('access-token')
+    utils.authenticate_token(access_token)
     # Change sandbox to development to test with live users;
     # Change to production when you're ready to go live!
 
@@ -271,5 +277,37 @@ def get_processor_token(plaid_response: schemas.PlaidExchangeInfo, plaid_client:
     )
     create_response = plaid_client.processor_token_create(create_request)
     processor_token = create_response['processor_token']
-    print(f"processor token is: {processor_token}")
-    return processor_token
+    print(f"Processor token is: {processor_token}")
+    return {"processor_token": processor_token}
+
+def create_ach_relationship(processor_token: schemas.ProcessorToken, identifier: str, db: Session, request: Request):
+    # Obtain Alpaca ID from identifier
+    account = get_account(db, identifier, request)
+    alpaca_id = str(account.id)
+
+    broker_client = get_broker_client()
+    ach_data = CreatePlaidRelationshipRequest(processor_token=processor_token.processor_token)
+    ach_relationship = broker_client.create_ach_relationship_for_account(
+                    account_id=alpaca_id,
+                    ach_data=ach_data
+                )
+    
+    return {"ach_relationship": ach_relationship}
+    
+
+def create_funds_transfer(relationship_id: schemas.RelationshipID, identifier: str, db: Session, request: Request):
+    account = get_account(db, identifier, request)
+    alpaca_id = str(account.id)
+
+    broker_client = get_broker_client()
+    transfer_data = CreateACHTransferRequest(
+                    amount=100,
+                    direction=TransferDirection.INCOMING,
+                    timing=TransferTiming.IMMEDIATE,
+                    relationship_id=relationship_id.relationship_id
+                )
+    transfer = broker_client.create_transfer_for_account(
+                account_id=alpaca_id,
+                transfer_data=transfer_data
+            )
+    return {"transfer_data": transfer}

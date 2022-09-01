@@ -29,8 +29,12 @@ class Account(AccountBase):
         orm_mode = True
 
 
-class Identifier(BaseModel):
-    identifier: str
+class ProcessorToken(BaseModel):
+    processor_token: str
+
+
+class RelationshipID(BaseModel):
+    relationship_id: str
 
 
 class PlaidExchangeInfo(BaseModel):

@@ -1,7 +1,5 @@
-from fastapi import APIRouter, Request, Depends, Header
-from typing import Union
+from fastapi import APIRouter, Request, Depends
 from sqlalchemy.orm import Session
-from plaid.api import plaid_api
 
 from ..schemas import schemas
 from ..services import crud
@@ -40,48 +38,40 @@ async def login_user(user: schemas.User):
 # Sign up for brokerage account
 @router.post("/accounts/signup")
 async def create_brokerage_account(account: schemas.AccountCreate, request: Request, db: Session = Depends(database.get_db)):
-    account = crud.create_account(db=db, account=account, request=request)
+    account = crud.create_account(db, account, request)
     return account
 
 
 # Get brokerage account
 @router.get("/accounts/{identifier}", response_model=schemas.Account)
 async def get_brokerage_account(identifier: str, request: Request, db: Session = Depends(database.get_db)):
-    db_user = crud.get_account(db, identifier=identifier, request=request)
+    db_user = crud.get_account(db, identifier, request)
     return db_user
-
-# # Create Plaid link token
-# @router.post("/plaid/create_link_token")
-# def create_link_token(identifier: schemas.Identifier, 
-#                       request: Request,
-#                       db: Session=Depends(database.get_db),
-#                       access_token: Union[str, None] = Header(default=None)):
-#     # Get the client_user_id by searching for the current user
-#     link_token = crud.get_link_token(db,
-#                                      identifier=identifier.identifier,
-#                                      request=request,
-#                                      plaid_client=plaid_client)
-#     return link_token
 
 
 # Create Plaid link token
 @router.post("/plaid/create_link_token")
-def create_link_token( 
-                      request: Request,
-                      db: Session=Depends(database.get_db)):
-                    #   access_token: Union[str, None] = Header(default=None)):
-    # Get the client_user_id by searching for the current user
-    link_token = crud.get_link_token(db,
-                                     identifier='helluva@test.ca',
-                                     request=request,
-                                     plaid_client=plaid_client)
-    print(link_token)
-    return {"link_token": link_token}
+def create_link_token(request: Request):
+    link_token = crud.get_link_token(plaid_client, request)
+    return link_token
 
 
-# Get processesor token from public token
+# Get processesor token from public token via Plaid
 @router.post("/plaid/exchange_public_token")
-async def exchange_token(plaid_response: schemas.PlaidExchangeInfo):
-    print(plaid_response)
-    processor_token = crud.get_processor_token(plaid_response, plaid_client)
+async def exchange_token(plaid_response: schemas.PlaidExchangeInfo, request: Request):
+    processor_token = crud.get_processor_token(plaid_response, plaid_client, request)
     return processor_token
+
+
+# Create ACH relationship using processor token
+@router.post("/accounts/{identifier}/ach_relationship", response_model=schemas.Account)
+async def create_ach_relationship(processor_token: schemas.ProcessorToken, identifier: str, request: Request, db: Session = Depends(database.get_db)):
+    relationship = crud.create_ach_relationship(processor_token, identifier, db, request)
+    return relationship
+
+
+# Transfer money using ACH relationship
+@router.post("/accounts/{identifier}/transfer", response_model=schemas.Account)
+async def create_funds_transfer(relationship_id: schemas.RelationshipID, identifier: str, request: Request, db: Session = Depends(database.get_db)):
+    transfer = crud.create_funds_transfer(relationship_id, identifier, db, request)
+    return transfer
