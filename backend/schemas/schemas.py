@@ -29,14 +29,18 @@ class Account(AccountBase):
         orm_mode = True
 
 
+class PlaidExchangeInfo(BaseModel):
+    public_token: str
+    account_id: str
+
+
 class ProcessorToken(BaseModel):
     processor_token: str
 
 
-class RelationshipID(BaseModel):
+# class RelationshipID(BaseModel):
+#     relationship_id: str
+
+class FundsTransferRequest(BaseModel):
     relationship_id: str
-
-
-class PlaidExchangeInfo(BaseModel):
-    public_token: str
-    account_id: str
+    transfer_amount: float

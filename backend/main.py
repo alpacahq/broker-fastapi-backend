@@ -6,7 +6,6 @@ from .routers import routes
 app = FastAPI()
 
 origins = [
-    # "http://localhost:3000",
     "*",
 ]
 

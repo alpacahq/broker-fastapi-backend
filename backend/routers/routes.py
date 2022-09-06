@@ -72,6 +72,6 @@ async def create_ach_relationship(processor_token: schemas.ProcessorToken, ident
 
 # Transfer money using ACH relationship
 @router.post("/accounts/{identifier}/transfer", response_model=schemas.Account)
-async def create_funds_transfer(relationship_id: schemas.RelationshipID, identifier: str, request: Request, db: Session = Depends(database.get_db)):
-    transfer = crud.create_funds_transfer(relationship_id, identifier, db, request)
+async def create_funds_transfer(request_params: schemas.FundsTransferRequest, identifier: str, request: Request, db: Session = Depends(database.get_db)):
+    transfer = crud.create_funds_transfer(request_params, identifier, db, request)
     return transfer

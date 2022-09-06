@@ -1,4 +1,3 @@
-from ast import Str
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -295,13 +294,16 @@ def create_ach_relationship(processor_token: schemas.ProcessorToken, identifier:
     return {"ach_relationship": ach_relationship}
     
 
-def create_funds_transfer(relationship_id: schemas.RelationshipID, identifier: str, db: Session, request: Request):
+def create_funds_transfer(request_params: schemas.FundsTransferRequest, identifier: str, db: Session, request: Request):
     account = get_account(db, identifier, request)
     alpaca_id = str(account.id)
 
+    relationship_id = request_params.relationship_id
+    transfer_amount = request_params.transfer_amount # For Plaid example, don't exceed 100
+
     broker_client = get_broker_client()
     transfer_data = CreateACHTransferRequest(
-                    amount=100,
+                    amount=transfer_amount,
                     direction=TransferDirection.INCOMING,
                     timing=TransferTiming.IMMEDIATE,
                     relationship_id=relationship_id.relationship_id
