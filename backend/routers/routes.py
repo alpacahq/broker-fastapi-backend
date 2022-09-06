@@ -5,9 +5,9 @@ from ..schemas import schemas
 from ..services import crud
 from ..config import database, plaid
 
-database.create_tables()
-
 plaid_client = plaid.get_plaid_client()
+
+database.create_tables()
 
 router = APIRouter()
 

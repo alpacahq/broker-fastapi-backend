@@ -38,9 +38,6 @@ class ProcessorToken(BaseModel):
     processor_token: str
 
 
-# class RelationshipID(BaseModel):
-#     relationship_id: str
-
 class FundsTransferRequest(BaseModel):
     relationship_id: str
     transfer_amount: float
