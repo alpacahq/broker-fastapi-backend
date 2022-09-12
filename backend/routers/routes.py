@@ -75,3 +75,17 @@ async def create_ach_relationship(processor_token: schemas.ProcessorToken, ident
 async def create_funds_transfer(request_params: schemas.FundsTransferRequest, identifier: str, request: Request, db: Session = Depends(database.get_db)):
     transfer = crud.create_funds_transfer(request_params, identifier, db, request)
     return transfer
+
+
+# Create a Journal between two accounts
+@router.post("/journals")
+async def create_journal(request_params: schemas.JournalParams, request: Request):
+    journal = crud.create_journal(request_params, request)
+    return journal
+
+
+# Get all open positions for an account
+@router.post("/accounts/{identifier}/positions")
+async def get_open_positions(identifier: str, request: Request, db: Session = Depends(database.get_db)):
+    positions = crud.get_open_positions(identifier, db, request)
+    return positions

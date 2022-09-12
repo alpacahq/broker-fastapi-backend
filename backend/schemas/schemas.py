@@ -41,3 +41,10 @@ class ProcessorToken(BaseModel):
 class FundsTransferRequest(BaseModel):
     relationship_id: str
     transfer_amount: float
+
+
+class JournalParams(BaseModel):
+    from_account: str
+    to_account: str
+    amount: float
+    entry_type: str

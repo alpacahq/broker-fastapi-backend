@@ -16,7 +16,7 @@ from alpaca.broker.models import (
                         Disclosures,
                         Agreement
                     )
-from alpaca.broker.requests import CreateAccountRequest, CreatePlaidRelationshipRequest, CreateACHTransferRequest
+from alpaca.broker.requests import CreateAccountRequest, CreatePlaidRelationshipRequest, CreateACHTransferRequest, CreateJournalRequest
 from alpaca.broker.enums import TaxIdType, FundingSource, AgreementType, TransferDirection, TransferTiming
 
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
@@ -29,7 +29,7 @@ from plaid.api import plaid_api
 
 from ..schemas import schemas
 from ..models import models
-from ..utils import utils
+from ..utils import utils, constants
 
 
 def cognito_signup(username: str, password: str):
@@ -258,8 +258,6 @@ def get_processor_token(plaid_response: schemas.PlaidExchangeInfo,
                         request: Request):
     access_token = request.headers.get('access-token')
     utils.authenticate_token(access_token)
-    # Change sandbox to development to test with live users;
-    # Change to production when you're ready to go live!
 
     # Exchange the public token from Plaid Link for an access token.
     public_token = plaid_response.public_token
@@ -299,7 +297,7 @@ def create_funds_transfer(request_params: schemas.FundsTransferRequest, identifi
     alpaca_id = str(account.id)
 
     relationship_id = request_params.relationship_id
-    transfer_amount = request_params.transfer_amount # For Plaid example, don't exceed 100
+    transfer_amount = request_params.transfer_amount
 
     broker_client = get_broker_client()
     transfer_data = CreateACHTransferRequest(
@@ -313,3 +311,30 @@ def create_funds_transfer(request_params: schemas.FundsTransferRequest, identifi
                 transfer_data=transfer_data
             )
     return {"transfer_data": transfer}
+
+def create_journal(request_params: schemas.JournalParams, request: Request):
+    access_token = request.headers.get('access-token')
+    utils.authenticate_token(access_token)
+
+    if request_params.entry_type not in constants.journal_entry_type:
+        raise HTTPException(status_code=422, detail="Journal entry type must be cash or security")
+    
+    entry_type = constants.journal_entry_type[request_params.entry_type]
+
+    journal_data = CreateJournalRequest(
+                    from_account=request_params.from_account,
+                    entry_type=entry_type,
+                    to_account=request_params.to_account,
+                    amount=request_params.amount
+                )
+        
+    return {"journal_data": journal_data}
+
+def get_open_positions(identifier: str, db: Session, request: Request):
+    account = get_account(db, identifier, request)
+    account_id = str(account.id)
+
+    broker_client = get_broker_client()
+    positions = broker_client.get_all_positions_for_account(account_id=account_id)
+
+    return {"positions": positions}
