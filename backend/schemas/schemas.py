@@ -1,5 +1,6 @@
 from datetime import datetime
 from uuid import UUID
+from typing import List
 
 from pydantic import BaseModel
 
@@ -48,3 +49,15 @@ class JournalParams(BaseModel):
     to_account: str
     amount: float
     entry_type: str
+
+
+class JournalEntry(BaseModel):
+    to_account: str
+    amount: float
+
+
+class BatchJournalParams(BaseModel):
+    entry_type: str
+    from_account: str
+    entries: List[JournalEntry]
+    

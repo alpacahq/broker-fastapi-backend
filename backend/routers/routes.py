@@ -84,6 +84,14 @@ async def create_journal(request_params: schemas.JournalParams, request: Request
     return journal
 
 
+# Batch journal from one account to many
+@router.post("/journals/batch")
+async def create_batch_journal(request_params: schemas.BatchJournalParams, request: Request):
+    print(request_params)
+    batch_journal = crud.create_batch_journal(request_params, request)
+    return batch_journal
+
+
 # Get all open positions for an account
 @router.post("/accounts/{identifier}/positions")
 async def get_open_positions(identifier: str, request: Request, db: Session = Depends(database.get_db)):

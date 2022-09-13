@@ -16,7 +16,7 @@ from alpaca.broker.models import (
                         Disclosures,
                         Agreement
                     )
-from alpaca.broker.requests import CreateAccountRequest, CreatePlaidRelationshipRequest, CreateACHTransferRequest, CreateJournalRequest
+from alpaca.broker.requests import CreateAccountRequest, CreatePlaidRelationshipRequest, CreateACHTransferRequest, CreateJournalRequest, BatchJournalRequestEntry, CreateBatchJournalRequest
 from alpaca.broker.enums import TaxIdType, FundingSource, AgreementType, TransferDirection, TransferTiming
 
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
@@ -317,7 +317,7 @@ def create_journal(request_params: schemas.JournalParams, request: Request):
     utils.authenticate_token(access_token)
 
     if request_params.entry_type not in constants.journal_entry_type:
-        raise HTTPException(status_code=422, detail="Journal entry type must be cash or security")
+        raise HTTPException(status_code=422, detail="Journal entry type must be JNLC or JNLS")
     
     entry_type = constants.journal_entry_type[request_params.entry_type]
 
@@ -328,7 +328,30 @@ def create_journal(request_params: schemas.JournalParams, request: Request):
                     amount=request_params.amount
                 )
         
-    return {"journal_data": journal_data}
+    return journal_data
+
+def create_batch_journal(request_params: schemas.BatchJournalParams, request: Request):
+    access_token = request.headers.get('access-token')
+    utils.authenticate_token(access_token)
+
+    if request_params.entry_type not in constants.journal_entry_type:
+        raise HTTPException(status_code=422, detail="Journal entry type must be JNLC or JNLS")
+
+    entry_type = constants.journal_entry_type[request_params.entry_type]
+
+    batch_entries = []
+    for entry in request_params.entries:
+        to_account, amount = entry.to_account, entry.amount
+        batch_journal_request = BatchJournalRequestEntry(to_account=to_account, amount=amount)
+        batch_entries.append(batch_journal_request)
+    batch_journal_data = CreateBatchJournalRequest(
+                    entry_type=entry_type,
+                    from_account=request_params.from_account, 
+                    entries=batch_entries
+                )
+    broker_client = get_broker_client()
+    batch_journal = broker_client.create_batch_journal(batch_data=batch_journal_data)
+    return batch_journal
 
 def get_open_positions(identifier: str, db: Session, request: Request):
     account = get_account(db, identifier, request)
