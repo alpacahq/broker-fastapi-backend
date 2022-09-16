@@ -16,7 +16,7 @@ from alpaca.broker.models import (
                         Disclosures,
                         Agreement
                     )
-from alpaca.broker.requests import CreateAccountRequest, CreatePlaidRelationshipRequest, CreateACHTransferRequest, CreateJournalRequest, BatchJournalRequestEntry, CreateBatchJournalRequest
+from alpaca.broker.requests import CreateAccountRequest, CreatePlaidRelationshipRequest, CreateACHTransferRequest, CreateJournalRequest, CreateBatchJournalRequest
 from alpaca.broker.enums import TaxIdType, FundingSource, AgreementType, TransferDirection, TransferTiming
 
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
@@ -315,35 +315,37 @@ def create_funds_transfer(request_params: schemas.FundsTransferRequest, identifi
 def create_journal(request_params: schemas.JournalParams, request: Request):
     access_token = request.headers.get('access-token')
     utils.authenticate_token(access_token)
+    utils.validate_journal_request(request_params)
 
-    if request_params.entry_type not in constants.journal_entry_type:
-        raise HTTPException(status_code=422, detail="Journal entry type must be JNLC or JNLS")
-    
     entry_type = constants.journal_entry_type[request_params.entry_type]
-
-    journal_data = CreateJournalRequest(
-                    from_account=request_params.from_account,
-                    entry_type=entry_type,
-                    to_account=request_params.to_account,
-                    amount=request_params.amount
-                )
-        
+    if request_params.entry_type == "JNLC":
+        journal_data = CreateJournalRequest(
+                        from_account=request_params.from_account,
+                        entry_type=entry_type,
+                        to_account=request_params.to_account,
+                        amount=request_params.amount
+                    )
+    else: # Is security journal
+        journal_data = CreateJournalRequest(
+                        from_account=request_params.from_account,
+                        entry_type=entry_type,
+                        to_account=request_params.to_account,
+                        symbol=request_params.symbol,
+                        qty=request_params.qty
+            )
     return journal_data
 
 def create_batch_journal(request_params: schemas.BatchJournalParams, request: Request):
     access_token = request.headers.get('access-token')
     utils.authenticate_token(access_token)
-
-    if request_params.entry_type not in constants.journal_entry_type:
-        raise HTTPException(status_code=422, detail="Journal entry type must be JNLC or JNLS")
+    utils.validate_journal_request(request_params)
 
     entry_type = constants.journal_entry_type[request_params.entry_type]
-
     batch_entries = []
     for entry in request_params.entries:
-        to_account, amount = entry.to_account, entry.amount
-        batch_journal_request = BatchJournalRequestEntry(to_account=to_account, amount=amount)
+        batch_journal_request = utils.create_batch_entry(request_params.entry_type, entry)
         batch_entries.append(batch_journal_request)
+
     batch_journal_data = CreateBatchJournalRequest(
                     entry_type=entry_type,
                     from_account=request_params.from_account, 

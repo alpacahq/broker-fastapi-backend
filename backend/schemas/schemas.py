@@ -1,6 +1,6 @@
 from datetime import datetime
 from uuid import UUID
-from typing import List
+from typing import List, Optional
 
 from pydantic import BaseModel
 
@@ -47,13 +47,17 @@ class FundsTransferRequest(BaseModel):
 class JournalParams(BaseModel):
     from_account: str
     to_account: str
-    amount: float
     entry_type: str
+    amount: Optional[float]
+    symbol: Optional[str]
+    qty: Optional[float]
 
 
 class JournalEntry(BaseModel):
     to_account: str
-    amount: float
+    amount: Optional[float]
+    symbol: Optional[str]
+    qty: Optional[float]
 
 
 class BatchJournalParams(BaseModel):

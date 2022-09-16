@@ -3,6 +3,12 @@ import cognitojwt
 from dotenv import load_dotenv
 load_dotenv()
 
+from typing import Union
+from ..schemas import schemas
+from .constants import journal_entry_type
+
+from alpaca.broker.requests import BatchJournalRequestEntry
+
 from fastapi import HTTPException
 
 # User ID from Cognito is currently not utilized
@@ -31,3 +37,23 @@ def authenticate_token(access_token: str):
             status_code=401,
             detail="User is not authorized to access this resource. Check access token."
         )
+
+def validate_journal_request(request_params: Union[schemas.JournalParams, schemas.JournalEntry]):
+    if request_params.entry_type not in journal_entry_type:
+        raise HTTPException(status_code=422, detail="Journal entry type must be JNLC or JNLS")
+
+    if isinstance(request_params, schemas.JournalParams):
+        if request_params.entry_type == "JNLC" and request_params.amount is None:
+            raise HTTPException(status_code=400, detail="Cash journals require amount in the request")
+        elif request_params.entry_type == "JNLS" and (request_params.symbol is None or request_params.qty is None):
+            raise HTTPException(status_code=400, detail="Security journals require symbol and qty")
+
+
+def create_batch_entry(entry_type: str, entry: schemas.JournalEntry):
+    if entry_type == "JNLC":
+        to_account, amount = entry.to_account, entry.amount
+        batch_journal_request = BatchJournalRequestEntry(to_account=to_account, amount=amount)
+    else: # entry_type == "JNLS"
+        to_account, symbol, qty = entry.to_account, entry.symbol, entry.qty
+        batch_journal_request = BatchJournalRequestEntry(to_account=to_account, symbol=symbol, qty=qty)
+    return batch_journal_request
