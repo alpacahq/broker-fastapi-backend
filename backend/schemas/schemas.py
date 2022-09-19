@@ -65,3 +65,13 @@ class BatchJournalParams(BaseModel):
     from_account: str
     entries: List[JournalEntry]
     
+
+class OrderParams(BaseModel):
+    symbol: str
+    side: str
+    type: str
+    time_in_force: str
+    qty: Optional[float]
+    notional: Optional[float]
+    limit_price: Optional[float]
+    commission: Optional[float]

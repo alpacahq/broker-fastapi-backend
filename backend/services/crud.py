@@ -1,4 +1,5 @@
 import os
+from webbrowser import get
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -16,7 +17,7 @@ from alpaca.broker.models import (
                         Disclosures,
                         Agreement
                     )
-from alpaca.broker.requests import CreateAccountRequest, CreatePlaidRelationshipRequest, CreateACHTransferRequest, CreateJournalRequest, CreateBatchJournalRequest
+from alpaca.broker.requests import CreateAccountRequest, CreatePlaidRelationshipRequest, CreateACHTransferRequest, CreateJournalRequest, CreateBatchJournalRequest, MarketOrderRequest, LimitOrderRequest
 from alpaca.broker.enums import TaxIdType, FundingSource, AgreementType, TransferDirection, TransferTiming
 
 from plaid.model.link_token_create_request import LinkTokenCreateRequest
@@ -317,7 +318,7 @@ def create_journal(request_params: schemas.JournalParams, request: Request):
     utils.authenticate_token(access_token)
     utils.validate_journal_request(request_params)
 
-    entry_type = constants.journal_entry_type[request_params.entry_type]
+    entry_type = constants.journal_entry_types[request_params.entry_type]
     if request_params.entry_type == "JNLC":
         journal_data = CreateJournalRequest(
                         from_account=request_params.from_account,
@@ -340,7 +341,7 @@ def create_batch_journal(request_params: schemas.BatchJournalParams, request: Re
     utils.authenticate_token(access_token)
     utils.validate_journal_request(request_params)
 
-    entry_type = constants.journal_entry_type[request_params.entry_type]
+    entry_type = constants.journal_entry_types[request_params.entry_type]
     batch_entries = []
     for entry in request_params.entries:
         batch_journal_request = utils.create_batch_entry(request_params.entry_type, entry)
@@ -354,6 +355,50 @@ def create_batch_journal(request_params: schemas.BatchJournalParams, request: Re
     broker_client = get_broker_client()
     batch_journal = broker_client.create_batch_journal(batch_data=batch_journal_data)
     return batch_journal
+
+
+# Creates only market and limit orders for now
+def create_order(identifier: str, request_params: schemas.OrderParams, db: Session, request: Request):
+    account = get_account(db, identifier, request)
+    account_id = str(account.id)
+    utils.validate_order_request(request_params)
+
+    if request_params.type == "market":
+        if request_params.notional:
+            order_request = MarketOrderRequest(
+                symbol=request_params.symbol,
+                notional=request_params.notional,
+                side=constants.order_sides[request_params.side],
+                type = constants.order_types[request_params.type],
+                time_in_force=constants.time_in_forces[request_params.time_in_force],
+                commission=request_params.commission
+            )
+        else:
+            order_request = MarketOrderRequest(
+                symbol=request_params.symbol,
+                qty=request_params.qty,
+                side=constants.order_sides[request_params.side],
+                type = constants.order_types[request_params.type],
+                time_in_force=constants.time_in_forces[request_params.time_in_force],
+                commission=request_params.commission
+            )
+    elif request_params.type == "limit":
+        order_request = LimitOrderRequest(
+            symbol=request_params.symbol,
+            qty=request_params.qty,
+            side=constants.order_sides[request_params.side],
+            type = constants.order_types[request_params.type],
+            time_in_force=constants.time_in_forces[request_params.time_in_force],
+            commission=request_params.commission,
+            limit_price=request_params.limit_price
+        )
+    else:
+        raise HTTPException(status_code=400, detail="Only market and limit orders are currently implemented")
+
+    broker_client = get_broker_client()
+    order = broker_client.submit_order_for_account(account_id, order_request)
+    return {"order": order}
+
 
 def get_open_positions(identifier: str, db: Session, request: Request):
     account = get_account(db, identifier, request)

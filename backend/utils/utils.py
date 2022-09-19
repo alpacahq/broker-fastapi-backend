@@ -5,7 +5,7 @@ load_dotenv()
 
 from typing import Union
 from ..schemas import schemas
-from .constants import journal_entry_type
+from .constants import *
 
 from alpaca.broker.requests import BatchJournalRequestEntry
 
@@ -39,7 +39,7 @@ def authenticate_token(access_token: str):
         )
 
 def validate_journal_request(request_params: Union[schemas.JournalParams, schemas.JournalEntry]):
-    if request_params.entry_type not in journal_entry_type:
+    if request_params.entry_type not in journal_entry_types:
         raise HTTPException(status_code=422, detail="Journal entry type must be JNLC or JNLS")
 
     if isinstance(request_params, schemas.JournalParams):
@@ -57,3 +57,21 @@ def create_batch_entry(entry_type: str, entry: schemas.JournalEntry):
         to_account, symbol, qty = entry.to_account, entry.symbol, entry.qty
         batch_journal_request = BatchJournalRequestEntry(to_account=to_account, symbol=symbol, qty=qty)
     return batch_journal_request
+
+
+def validate_order_request(request_params: schemas.OrderParams):
+    # Validate order side
+    if request_params.side not in order_sides:
+        raise HTTPException(status_code=422, detail="Order side must be buy or sell")
+
+    # Validate time in force
+    if request_params.time_in_force not in time_in_forces:
+        raise HTTPException(status_code=422, detail="Time in force must be day, gtc, opg, cls, ioc, or fok")
+
+    # Validate order type
+    if request_params.type not in order_types:
+        raise HTTPException(status_code=422, detail="Order type must be market, limit, stop, stop_limit, or trailing_stop")
+    elif request_params.type == "market" and not ((request_params.notional is None) ^ (request_params.qty is None)):
+        raise HTTPException(status_code=400, detail="Market orders must have only one of notional OR qty")
+    elif request_params.type == "limit" and request_params.limit_price is None:
+        raise HTTPException(status_code=400, detail="Limit orders must be used with limit_price")

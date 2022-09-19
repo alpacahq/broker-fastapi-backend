@@ -91,8 +91,15 @@ async def create_batch_journal(request_params: schemas.BatchJournalParams, reque
     return batch_journal
 
 
+# Create an order for an account
+@router.post("/trading/accounts/{identifier}/orders")
+async def create_order(identifier: str, request_params: schemas.OrderParams, request: Request, db: Session = Depends(database.get_db)):
+    positions = crud.create_order(identifier, request_params, db, request)
+    return positions
+
+
 # Get all open positions for an account
-@router.post("/accounts/{identifier}/positions")
+@router.get("/trading/accounts/{identifier}/positions")
 async def get_open_positions(identifier: str, request: Request, db: Session = Depends(database.get_db)):
     positions = crud.get_open_positions(identifier, db, request)
     return positions
