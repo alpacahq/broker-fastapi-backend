@@ -313,6 +313,7 @@ def create_funds_transfer(request_params: schemas.FundsTransferRequest, identifi
             )
     return {"transfer_data": transfer}
 
+
 def create_journal(request_params: schemas.JournalParams, request: Request):
     access_token = request.headers.get('access-token')
     utils.authenticate_token(access_token)
@@ -335,6 +336,7 @@ def create_journal(request_params: schemas.JournalParams, request: Request):
                         qty=request_params.qty
             )
     return journal_data
+
 
 def create_batch_journal(request_params: schemas.BatchJournalParams, request: Request):
     access_token = request.headers.get('access-token')
@@ -409,7 +411,6 @@ def get_orders(identifier: str, db: Session, request: Request):
     return {"orders": orders}
 
 
-
 def get_open_positions(identifier: str, db: Session, request: Request):
     account = get_account(db, identifier, request)
     account_id = str(account.id)
@@ -425,6 +426,6 @@ def get_all_positions(request: Request):
     utils.authenticate_token(access_token)
 
     broker_client = get_broker_client()
-    all_positions = broker_client.foo() # Bulk fetch is not implemented yet
+    all_positions = broker_client.foo()  # Bulk fetch is not implemented yet
 
     return {"positions": all_positions}
