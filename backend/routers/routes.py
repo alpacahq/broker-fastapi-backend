@@ -98,8 +98,22 @@ async def create_order(identifier: str, request_params: schemas.OrderParams, req
     return positions
 
 
+# Get all open orders for an account
+@router.get("/trading/accounts/{identifier}/orders")
+async def get_orders(identifier: str, request: Request, db: Session = Depends(database.get_db)):
+    positions = crud.get_orders(identifier, db, request)
+    return positions
+
+
 # Get all open positions for an account
 @router.get("/trading/accounts/{identifier}/positions")
 async def get_open_positions(identifier: str, request: Request, db: Session = Depends(database.get_db)):
     positions = crud.get_open_positions(identifier, db, request)
+    return positions
+
+
+# Bulk fetch all open positions
+@router.get("/trading/positions")
+async def get_all_positions(request: Request):
+    positions = crud.get_all_positions(request)
     return positions

@@ -1,8 +1,3 @@
-import os
-from webbrowser import get
-from dotenv import load_dotenv
-load_dotenv()
-
 import boto3
 from datetime import datetime
 from faker import Faker
@@ -31,6 +26,11 @@ from plaid.api import plaid_api
 from ..schemas import schemas
 from ..models import models
 from ..utils import utils, constants
+
+import os
+from webbrowser import get
+from dotenv import load_dotenv
+load_dotenv()
 
 
 def cognito_signup(username: str, password: str):
@@ -400,6 +400,16 @@ def create_order(identifier: str, request_params: schemas.OrderParams, db: Sessi
     return {"order": order}
 
 
+def get_orders(identifier: str, db: Session, request: Request):
+    account = get_account(db, identifier, request)
+    account_id = str(account.id)
+
+    broker_client = get_broker_client()
+    orders = broker_client.get_orders_for_account(account_id)
+    return {"orders": orders}
+
+
+
 def get_open_positions(identifier: str, db: Session, request: Request):
     account = get_account(db, identifier, request)
     account_id = str(account.id)
@@ -408,3 +418,13 @@ def get_open_positions(identifier: str, db: Session, request: Request):
     positions = broker_client.get_all_positions_for_account(account_id=account_id)
 
     return {"positions": positions}
+
+
+def get_all_positions(request: Request):
+    access_token = request.headers.get('access-token')
+    utils.authenticate_token(access_token)
+
+    broker_client = get_broker_client()
+    all_positions = broker_client.foo() # Bulk fetch is not implemented yet
+
+    return {"positions": all_positions}
