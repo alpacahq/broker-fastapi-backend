@@ -53,7 +53,7 @@ def create_batch_entry(entry_type: str, entry: schemas.JournalEntry):
     if entry_type == "JNLC":
         to_account, amount = entry.to_account, entry.amount
         batch_journal_request = BatchJournalRequestEntry(to_account=to_account, amount=amount)
-    else: # entry_type == "JNLS"
+    else:  # entry_type == "JNLS"
         to_account, symbol, qty = entry.to_account, entry.symbol, entry.qty
         batch_journal_request = BatchJournalRequestEntry(to_account=to_account, symbol=symbol, qty=qty)
     return batch_journal_request

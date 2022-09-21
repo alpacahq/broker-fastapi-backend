@@ -371,7 +371,7 @@ def create_order(identifier: str, request_params: schemas.OrderParams, db: Sessi
                 symbol=request_params.symbol,
                 notional=request_params.notional,
                 side=constants.order_sides[request_params.side],
-                type = constants.order_types[request_params.type],
+                type=constants.order_types[request_params.type],
                 time_in_force=constants.time_in_forces[request_params.time_in_force],
                 commission=request_params.commission
             )
@@ -380,7 +380,7 @@ def create_order(identifier: str, request_params: schemas.OrderParams, db: Sessi
                 symbol=request_params.symbol,
                 qty=request_params.qty,
                 side=constants.order_sides[request_params.side],
-                type = constants.order_types[request_params.type],
+                type=constants.order_types[request_params.type],
                 time_in_force=constants.time_in_forces[request_params.time_in_force],
                 commission=request_params.commission
             )
@@ -389,7 +389,7 @@ def create_order(identifier: str, request_params: schemas.OrderParams, db: Sessi
             symbol=request_params.symbol,
             qty=request_params.qty,
             side=constants.order_sides[request_params.side],
-            type = constants.order_types[request_params.type],
+            type=constants.order_types[request_params.type],
             time_in_force=constants.time_in_forces[request_params.time_in_force],
             commission=request_params.commission,
             limit_price=request_params.limit_price
